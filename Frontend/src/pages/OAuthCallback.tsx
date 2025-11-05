@@ -9,31 +9,44 @@ const OAuthCallback = () => {
   const location = useLocation();
   const { login } = useAuth();
   const { showToast } = useToast();
-  const [debugInfo, setDebugInfo] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    const handleOAuthCallback = async () => {
+    const handleCallback = () => {
       try {
-        const urlParams = new URLSearchParams(location.search);
+        const params = new URLSearchParams(location.search);
+        
+        // Get all parameters
+        const access = params.get('access');
+        const refresh = params.get('refresh');
+        const userId = params.get('user_id');
+        const email = params.get('email');
+        const username = params.get('username');
+        const isNew = params.get('is_new') === '1';
+        const redirectTo = params.get('redirect');
+        const errorParam = params.get('error');
 
-        // Debug information
-        const debugData = {
-          fullUrl: window.location.href,
-          pathname: location.pathname,
-          search: location.search,
-          allParams: Object.fromEntries(urlParams.entries()),
-        };
-        console.log('=== OAuth Callback Debug ===', debugData);
-        setDebugInfo(JSON.stringify(debugData, null, 2));
+        console.log('OAuth Callback Params:', {
+          access: access ? 'present' : 'missing',
+          refresh: refresh ? 'present' : 'missing',
+          userId,
+          email,
+          username,
+          isNew,
+          redirectTo,
+          errorParam,
+        });
 
-        const accessToken = urlParams.get('access');
-        const refreshToken = urlParams.get('refresh');
-        const userId = urlParams.get('user_id');
-        const email = urlParams.get('email');
-        const username = urlParams.get('username');
+        // Handle error
+        if (errorParam) {
+          setError(`Authentication failed: ${errorParam}`);
+          setTimeout(() => navigate('/login', { replace: true }), 2000);
+          return;
+        }
 
-        if (!accessToken) {
-          showToast('Authentication failed. Missing token.', 'error');
+        // Validate token
+        if (!access) {
+          setError('No access token received');
           setTimeout(() => navigate('/login', { replace: true }), 2000);
           return;
         }
@@ -43,50 +56,54 @@ const OAuthCallback = () => {
           user_id: userId || '',
           email: email || '',
           username: username || '',
+          is_profile_complete: !isNew,
         };
 
-        // ✅ Save tokens
-        localStorage.setItem('authToken', accessToken);
-        if (refreshToken) {
-          localStorage.setItem('refreshToken', refreshToken);
+        // Save auth data
+        login(access, user);
+        
+        if (refresh) {
+          localStorage.setItem('refreshToken', refresh);
         }
-        localStorage.setItem('user', JSON.stringify(user));
-
-        // ✅ Update context
-        login(accessToken, user);
 
         showToast('Successfully logged in!', 'success');
 
-        // ✅ Redirect
-        if (location.pathname.includes('onboarding')) {
-          navigate('/onboarding', { replace: true });
+        // Navigate based on profile completion
+        if (redirectTo === 'onboarding' || isNew) {
+          navigate('/app/onboarding', { replace: true });
         } else {
-          navigate('/dashboard', { replace: true });
+          navigate('/app/dashboard', { replace: true });
         }
-      } catch (error) {
-        console.error('OAuth callback error:', error);
-        setDebugInfo(`Error: ${String(error)}`);
-        setTimeout(() => {
-          showToast('Authentication failed. Please try again.', 'error');
-          navigate('/login', { replace: true });
-        }, 2000);
+        
+      } catch (err) {
+        console.error('OAuth callback error:', err);
+        setError('An error occurred during authentication');
+        setTimeout(() => navigate('/login', { replace: true }), 2000);
       }
     };
 
-    handleOAuthCallback();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    handleCallback();
+  }, []); // Run once on mount
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-lg">
-        <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-        <p className="mb-4 text-lg text-gray-700">Completing authentication...</p>
-
-        {debugInfo && (
-          <div className="mt-6 rounded bg-gray-100 p-4 text-left">
-            <p className="mb-2 text-sm font-semibold text-gray-700">Debug Info:</p>
-            <pre className="overflow-auto text-xs text-gray-600">{debugInfo}</pre>
-          </div>
+        {error ? (
+          <>
+            <div className="mb-4 text-red-600">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <p className="text-lg font-semibold text-gray-900">{error}</p>
+            <p className="mt-2 text-sm text-gray-600">Redirecting to login...</p>
+          </>
+        ) : (
+          <>
+            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+            <p className="text-lg text-gray-700">Completing authentication...</p>
+            <p className="mt-2 text-sm text-gray-500">Please wait</p>
+          </>
         )}
       </div>
     </div>

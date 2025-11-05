@@ -13,9 +13,7 @@ class UserManager(BaseUserManager):
         if not username:
             username = f"user_{uuid.uuid4().hex[:12]}"
 
-        # Merge accounts for multiple signins
-        # If a user signs in with Google or GitHub later, check if a user with the same email exists.
-        # If so, update that user with the new provider's ID instead of creating a duplicate account.
+        # Check for existing user with same email
         existing_user = self.model.objects.filter(email=email).first()
         if existing_user:
             # Update IDs if provided
@@ -28,7 +26,7 @@ class UserManager(BaseUserManager):
             existing_user.save(using=self._db)
             return existing_user
 
-        user = self.model(email=email, **extra_fields)
+        user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -43,7 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
-    password_hash = models.CharField(max_length=128)  # stores hashed password
+    password_hash = models.CharField(max_length=128)
     bio = models.TextField(blank=True, null=True)
     profile_picture_url = models.URLField(blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
@@ -55,13 +53,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     githubId = models.CharField(unique=True, max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    
+    # ✅ Add this field for OAuth users
+    is_profile_complete = models.BooleanField(default=False)
 
     @property
     def id(self):
-        """
-        Provides an 'id' property that mirrors 'user_id' for compatibility 
-        with packages (like simple-jwt) that expect 'user.id'.
-        """
         return self.user_id
 
     objects = UserManager()

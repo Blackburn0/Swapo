@@ -45,13 +45,16 @@ const AppRoutes = () => {
 
       {/* ✅ OAuth Callback Routes - Must match Django redirect URLs */}
       <Route path="/oauth/callback" element={<OAuthCallback />} />
-      <Route path="/dashboard" element={<OAuthCallback />} /> {/* Catches Django redirects */}
-      <Route path="/onboarding" element={<OAuthCallback />} /> {/* Catches new user redirects */}
+      <Route path="/dashboard" element={<OAuthCallback />} /> 
+      <Route path="/onboarding" element={<OAuthCallback />} /> 
+
+      {/* <Route path="/oauth/callback" element={<OAuthCallback />} /> */}
+
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         {/* Actual Dashboard Routes (after auth) */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route path="/app/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="trade" element={<Trade />} />
           <Route path="listing" element={<Listing />} />
@@ -70,8 +73,8 @@ const AppRoutes = () => {
           <Route path="settings/about" element={<About />} />
         </Route>
 
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/dashboard/notification" element={<Notifications />} />
+        <Route path="/app/onboarding" element={<Onboarding />} />
+        <Route path="/app/dashboard/notification" element={<Notifications />} />
         <Route path="/create-listing" element={<CreateListing />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/delete-account" element={<DeleteAccount />} />

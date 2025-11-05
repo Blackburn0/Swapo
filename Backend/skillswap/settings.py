@@ -81,21 +81,8 @@ INSTALLED_APPS = [
 ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'
 
-# where to redirect after social login
-# LOGIN_REDIRECT_URL = "http://localhost:5173/dashboard"
-# SIGNUP_REDIRECT_URL = "http://localhost:5173/onboarding"
-# LOGOUT_REDIRECT_URL = 'http://localhost:5173'
 
 
-
-# Frontend URL (for redirects)
-FRONTEND_URL = "http://localhost:5173"
-
-# IMPORTANT: After OAuth success, redirect to our backend handler first
-# This handler will generate tokens and then redirect to frontend
-LOGIN_REDIRECT_URL = "/api/v1/auth/oauth/callback/"  # ✅ Backend URL, not frontend
-SIGNUP_REDIRECT_URL = "/accounts/oauth/callback/"  # ✅ Same handler for both
-LOGOUT_REDIRECT_URL = f"{FRONTEND_URL}/login"
 
 # The rest of your allauth config stays the same
 ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'
@@ -159,7 +146,6 @@ ACCOUNT_LOGIN_METHODS = ["email"]  # Only email login supported
 ACCOUNT_SIGNUP_FIELDS = ["email", "password1", "password2"]
 
 
-REST_USE_JWT = True
 
 
 MIDDLEWARE = [
@@ -289,8 +275,6 @@ REST_FRAMEWORK = {
     )
 }
 
-# Allow frontend requests (temporarily allow all)
-CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -302,3 +286,38 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',
     'USER_ID_CLAIM': 'user_id',
 }
+
+
+
+# Add to your settings.py
+
+# Frontend URL (for redirects)
+FRONTEND_URL = "http://localhost:5173"
+
+# IMPORTANT: After OAuth success, redirect to our backend handler first
+# This handler will generate tokens and then redirect to frontend
+LOGIN_REDIRECT_URL = "/accounts/oauth/callback/"  # ✅ Backend URL, not frontend
+SIGNUP_REDIRECT_URL = "/accounts/oauth/callback/"  # ✅ Same handler for both
+LOGOUT_REDIRECT_URL = f"{FRONTEND_URL}/login"
+
+# The rest of your allauth config stays the same
+ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'
+
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = True  
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+
+
+

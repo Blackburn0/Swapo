@@ -19,24 +19,26 @@ from django.views.generic import TemplateView
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
+from django.shortcuts import redirect
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     path("", lambda request: HttpResponse("Welcome to SkillSwap!")), 
 
-    # auth endpoints
-    # custom endpoints (register, login overrides, etc.)
+      # Auth endpoints
     path("api/v1/auth/", include("accounts.urls")),
-    # dj-rest-auth built-in endpoints
     path("api/v1/auth/", include("dj_rest_auth.urls")),
-    # dj-rest-auth registration
     path("api/v1/auth/registration/", include("dj_rest_auth.registration.urls")),
-    # Social login redirects & callbacks
-    path("accounts/", include("allauth.urls")),
 
-    # Logout
-    path('api/v1/auth/logout/', include('dj_rest_auth.urls')),
+    # Social login (google/github) — Allauth handles provider logic
+    path("accounts/", include("allauth.urls")),
+    path("accounts/oauth/callback/", lambda request: redirect("/api/v1/auth/oauth/callback/")),
+
+
+
+
 
     # user-skill endpoints
     path("api/v1/user-skills/", include("userSkills.urls")),

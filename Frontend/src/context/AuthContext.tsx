@@ -1,30 +1,44 @@
 // src/context/AuthContext.tsx
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+
+interface User {
+  [key: string]: any;
+}
 
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
-  user: any;
+  user: User | null;
 }
 
 interface AuthContextType extends AuthState {
-  login: (token: string, user: any) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
+  loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const defaultState: AuthState = {
+  isAuthenticated: false,
+  token: null,
+  user: null,
+};
+
+const AuthContext = createContext<AuthContextType>({
+  ...defaultState,
+  login: () => {},
+  logout: () => {},
+  loading: true,
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    token: null,
-    user: null,
-  });
-  const [loading, setLoading] = useState(true);
+  const [authState, setAuthState] = useState<AuthState>(defaultState);
+  const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userJson = localStorage.getItem('user');
+    const token = localStorage.getItem("authToken");
+    const userJson = localStorage.getItem("user");
     if (token) {
       setAuthState({
         isAuthenticated: true,
@@ -35,31 +49,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const login = (token: string, user: any) => {
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    setAuthState({ isAuthenticated: true, token, user });
+  const login = (token: string, user: User) => {
+    localStorage.setItem("authToken", token);
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+    setAuthState({
+      isAuthenticated: true,
+      token,
+      user,
+    });
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    setAuthState({ isAuthenticated: false, token: null, user: null });
-    window.location.href = '/login';
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    setAuthState(defaultState);
+    navigate("/login");
   };
 
-  if (loading) return null;
+  const value: AuthContextType = {
+    isAuthenticated: authState.isAuthenticated,
+    token: authState.token,
+    user: authState.user,
+    login,
+    logout,
+    loading,
+  };
 
-  return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 };

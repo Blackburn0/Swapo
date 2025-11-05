@@ -17,6 +17,8 @@ urlpatterns = [
     path("github/", github_login_redirect, name="github-login-redirect"),
 
     path('oauth/callback/', oauth_redirect_handler, name='oauth_callback'),
+    # path('', include('allauth.urls')),
+
 
 ]
 

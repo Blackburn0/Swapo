@@ -20,7 +20,7 @@ const DashboardLayout = () => {
         <div className="px-4">
           <nav className="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
             <NavLink
-              to="/dashboard"
+              to="/app/dashboard"
               end
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
@@ -35,7 +35,7 @@ const DashboardLayout = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/trade"
+              to="/app/dashboard/trade"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive
@@ -49,7 +49,7 @@ const DashboardLayout = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/listing"
+              to="/app/dashboard/listing"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive
@@ -63,7 +63,7 @@ const DashboardLayout = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/messages"
+              to="/app/dashboard/messages"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive
@@ -77,7 +77,7 @@ const DashboardLayout = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/profile"
+              to="/app/dashboard/profile"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive

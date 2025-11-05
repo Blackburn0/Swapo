@@ -62,7 +62,7 @@ const Login = () => {
       if (token) {
         login(token, user);
         showToast('Welcome back!', 'success');
-        navigate('/dashboard'); // ✅ Navigate to actual dashboard route
+        navigate('/app/dashboard'); // ✅ Navigate to actual dashboard route
       } else {
         showToast('Invalid login response (no token)', 'error');
       }
