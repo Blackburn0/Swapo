@@ -30,22 +30,22 @@ const quickLinksData = [
   {
     icon: PlusCircle,
     title: 'New Listing',
-    url: '/dashboard/listing',
+    url: '/app/dashboard/listing',
   },
   {
     icon: ArrowLeftRight,
     title: 'Find a Trade',
-    url: '/dashboard/trade',
+    url: '/app/dashboard/trade',
   },
   {
     icon: Star,
     title: 'My Reviews',
-    url: '/dashboard/reviews',
+    url: '/app/dashboard/reviews',
   },
   {
     icon: Settings,
     title: 'Settings',
-    url: '/dashboard/settings',
+    url: '/app/dashboard/settings',
   },
 ];
 
@@ -73,7 +73,7 @@ const DashboardHome = () => {
         </div>
         <div
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-transparent bg-white/20"
-          onClick={() => navigate('/dashboard/notification')}
+          onClick={() => navigate('/app/dashboard/notification')}
         >
           <Bell size={18} />
         </div>

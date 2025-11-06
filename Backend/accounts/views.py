@@ -17,6 +17,7 @@ from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSeri
 
 
 
+from django.contrib.auth.models import update_last_login
 
 
 
@@ -50,53 +51,195 @@ def get_tokens_for_user(user):
     }
 
 
+# @csrf_exempt
+# def oauth_redirect_handler(request):
+#     """
+#     This view is called after successful OAuth authentication.
+#     It generates JWT tokens and redirects to the frontend with tokens in URL.
+#     """
+#     logger.info("=== OAuth Redirect Handler Called ===")
+#     logger.info(f"User authenticated: {request.user.is_authenticated}")
+#     logger.info(f"User: {request.user}")
+    
+#     if not request.user.is_authenticated:
+#         logger.error("User not authenticated in redirect handler")
+#         # Redirect to login page
+#         return redirect(f"{settings.FRONTEND_URL}/login?error=auth_failed")
+    
+#     try:
+#         user = request.user
+        
+#         # Generate JWT tokens
+#         tokens = get_tokens_for_user(user)
+        
+#         # Check if user needs onboarding
+#         is_new_user = not getattr(user, 'is_profile_complete', True)
+        
+#         # Choose redirect URL based on user status
+#         if is_new_user:
+#             base_url = f"{settings.FRONTEND_URL}/onboarding"
+#         else:
+#             base_url = f"{settings.FRONTEND_URL}/dashboard"
+        
+#         # Prepare user data to pass
+#         user_data = {
+#             'access': tokens['access'],
+#             'refresh': tokens['refresh'],
+#             'user_id': str(getattr(user, 'user_id', user.id)),
+#             'email': user.email,
+#             'username': user.username,
+#         }
+        
+#         # Build redirect URL with tokens
+#         redirect_url = f"{base_url}?{urlencode(user_data)}"
+        
+#         logger.info(f"Redirecting to: {base_url} with tokens")
+#         logger.info(f"Token generated successfully for user: {user.email}")
+        
+#         return redirect(redirect_url)
+        
+#     except Exception as e:
+#         logger.error(f"Error in oauth_redirect_handler: {str(e)}", exc_info=True)
+#         return redirect(f"{settings.FRONTEND_URL}/login?error=server_error")
+
+
+# @csrf_exempt
+# def oauth_redirect_handler(request):
+#     logger.info("=== OAuth Redirect Handler Called ===")
+
+#     if not request.user.is_authenticated:
+#         return redirect(f"{settings.FRONTEND_URL}/login?error=auth_failed")
+
+#     try:
+#         user = request.user
+#         tokens = get_tokens_for_user(user)
+
+#         logger.info(f"Before update: user.last_login = {user.last_login}")
+
+#         # Use last_login logic
+#         is_new_user = user.last_login is None
+
+#         from django.contrib.auth.models import update_last_login
+#         update_last_login(None, user)
+#         logger.info(f"After update: user.last_login = {user.last_login}")
+
+#         # redirect logic
+#         base_url = (
+#             f"{settings.FRONTEND_URL}/onboarding"
+#             if is_new_user
+#             else f"{settings.FRONTEND_URL}/dashboard"
+#         )
+
+#         user_data = {
+#             'access': tokens['access'],
+#             'refresh': tokens['refresh'],
+#             'user_id': str(user.user_id),
+#             'email': user.email,
+#             'username': user.username,
+#         }
+
+#         redirect_url = f"{base_url}?{urlencode(user_data)}"
+#         logger.info(f"Redirecting to: {redirect_url}")
+#         return redirect(redirect_url)
+
+#     except Exception as e:
+#         logger.error(f"Error in oauth_redirect_handler: {str(e)}", exc_info=True)
+#         return redirect(f"{settings.FRONTEND_URL}/login?error=server_error")
+
+# @csrf_exempt
+# def oauth_redirect_handler(request):
+#     logger.info("=== OAuth Redirect Handler Called ===")
+
+#     if not request.user.is_authenticated:
+#         return redirect(f"{settings.FRONTEND_URL}/login?error=auth_failed")
+
+#     try:
+#         user = request.user
+#         tokens = get_tokens_for_user(user)
+
+#         logger.info(f"Before update: user.last_login = {user.last_login}")
+
+#         # Detect if this is the user's first login
+#         is_new_user = user.last_login is None
+
+#         # Update last_login
+#         from django.contrib.auth.models import update_last_login
+#         update_last_login(None, user)
+#         logger.info(f"After update: user.last_login = {user.last_login}")
+
+#         # Choose redirect path
+#         redirect_path = "onboarding" if is_new_user else "dashboard"
+#         base_url = f"{settings.FRONTEND_URL}/{redirect_path}"
+
+#         # Prepare user data + flags
+#         user_data = {
+#             "access": tokens["access"],
+#             "refresh": tokens["refresh"],
+#             "user_id": str(user.user_id),
+#             "email": user.email,
+#             "username": user.username,
+#             "is_new": "1" if is_new_user else "0",
+#             "redirect": redirect_path,
+#         }
+
+#         # Build full redirect URL
+#         redirect_url = f"{base_url}?{urlencode(user_data)}"
+#         logger.info(f"Redirecting to: {redirect_url}")
+
+#         return redirect(redirect_url)
+
+#     except Exception as e:
+#         logger.error(f"Error in oauth_redirect_handler: {str(e)}", exc_info=True)
+#         return redirect(f"{settings.FRONTEND_URL}/login?error=server_error")
+
+
 @csrf_exempt
 def oauth_redirect_handler(request):
-    """
-    This view is called after successful OAuth authentication.
-    It generates JWT tokens and redirects to the frontend with tokens in URL.
-    """
     logger.info("=== OAuth Redirect Handler Called ===")
-    logger.info(f"User authenticated: {request.user.is_authenticated}")
-    logger.info(f"User: {request.user}")
-    
+
     if not request.user.is_authenticated:
-        logger.error("User not authenticated in redirect handler")
-        # Redirect to login page
         return redirect(f"{settings.FRONTEND_URL}/login?error=auth_failed")
-    
+
     try:
         user = request.user
-        
-        # Generate JWT tokens
         tokens = get_tokens_for_user(user)
-        
-        # Check if user needs onboarding
-        is_new_user = not getattr(user, 'is_profile_complete', True)
-        
-        # Choose redirect URL based on user status
-        if is_new_user:
-            base_url = f"{settings.FRONTEND_URL}/onboarding"
-        else:
-            base_url = f"{settings.FRONTEND_URL}/dashboard"
-        
-        # Prepare user data to pass
+
+        logger.info(f"Before update: user.last_login = {user.last_login}")
+
+        # Detect new user: if registration happened recently (e.g. within 5 seconds)
+        from django.utils import timezone
+        import datetime
+
+        time_diff = timezone.now() - user.registration_date
+        is_new_user = time_diff.total_seconds() < 5
+
+        # Update last_login
+        from django.contrib.auth.models import update_last_login
+        update_last_login(None, user)
+
+        logger.info(f"After update: user.last_login = {user.last_login}")
+        logger.info(f"is_new_user = {is_new_user}")
+
+        # Choose redirect path
+        redirect_path = "onboarding" if is_new_user else "dashboard"
+        base_url = f"{settings.FRONTEND_URL}/{redirect_path}"
+
+        # Data for frontend
         user_data = {
-            'access': tokens['access'],
-            'refresh': tokens['refresh'],
-            'user_id': str(getattr(user, 'user_id', user.id)),
-            'email': user.email,
-            'username': user.username,
+            "access": tokens["access"],
+            "refresh": tokens["refresh"],
+            "user_id": str(user.user_id),
+            "email": user.email,
+            "username": user.username,
+            "is_new": "1" if is_new_user else "0",
+            "redirect": redirect_path,
         }
-        
-        # Build redirect URL with tokens
+
         redirect_url = f"{base_url}?{urlencode(user_data)}"
-        
-        logger.info(f"Redirecting to: {base_url} with tokens")
-        logger.info(f"Token generated successfully for user: {user.email}")
-        
+        logger.info(f"Redirecting to: {redirect_url}")
+
         return redirect(redirect_url)
-        
+
     except Exception as e:
         logger.error(f"Error in oauth_redirect_handler: {str(e)}", exc_info=True)
         return redirect(f"{settings.FRONTEND_URL}/login?error=server_error")
@@ -151,6 +294,33 @@ def github_login_redirect(request):
     return redirect('/accounts/github/login/')
 
 
+# class RegisterView(generics.CreateAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = RegisterSerializer
+#     permission_classes = [AllowAny]
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         try:
+#             serializer.is_valid(raise_exception=True)
+#             refresh = RefreshToken.for_user(user)
+
+#             user = serializer.save()
+#             return Response({
+#                 "message": "User registered successfully",
+#                 "refresh": str(refresh),
+#                 "access": str(refresh.access_token),
+#                 "email": user.email,
+#                 "googleId": getattr(user, "googleId", None),
+#                 "githubId": getattr(user, "githubId", None),
+#             }, status=status.HTTP_201_CREATED)
+
+#         except IntegrityError as e:
+#             # Example: duplicate email
+#             return Response({"error": "A user with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -160,17 +330,27 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
+            # Save user first
             user = serializer.save()
+
+            # Generate tokens for the new user
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+
             return Response({
                 "message": "User registered successfully",
+                "refresh": str(refresh),
+                "access": str(access_token),
                 "email": user.email,
                 "googleId": getattr(user, "googleId", None),
                 "githubId": getattr(user, "githubId", None),
             }, status=status.HTTP_201_CREATED)
 
-        except IntegrityError as e:
-            # Example: duplicate email
-            return Response({"error": "A user with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            return Response(
+                {"error": "A user with this email already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

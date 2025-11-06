@@ -39,7 +39,7 @@ const ConnectAndTrade = ({ step, onGoTo }: ConnectAndTradeProps) => {
 
         <Button
           className="bg-[#FF2E2E] py-3 text-lg font-semibold"
-          onClick={() => navigate('/dashboard/listing')}
+          onClick={() => navigate('/app/dashboard/listing')}
         >
           Start Browsing
         </Button>
