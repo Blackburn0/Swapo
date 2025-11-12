@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.shortcuts import redirect
 
-from .views import RegisterView, LoginView, PasswordResetRequestView, PasswordResetConfirmView, ChangePasswordView, google_login_redirect, github_login_redirect, oauth_redirect_handler
+from .views import RegisterView, LoginView, PasswordResetRequestView, PasswordResetConfirmView, ChangePasswordView, google_login_redirect, github_login_redirect, oauth_redirect_handler, get_user_info, UpdateProfileView, UserPrivacyView, DeleteAccountView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
@@ -12,6 +12,12 @@ urlpatterns = [
     path("password/reset/<uidb64>/<token>/", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("change-password/", ChangePasswordView.as_view(), name="change_password"),
 
+    path("me/", get_user_info, name="get_user_info"),
+    path("me/update/", UpdateProfileView.as_view(), name="update_profile"),
+    path("privacy/", UserPrivacyView.as_view(), name="user-privacy"),
+    path("delete-account/", DeleteAccountView.as_view(), name="delete-account"),
+
+    
     # Custom redirect endpoints for Google OAuth2 and Github OAuth
     path('google/', google_login_redirect, name='google-login-redirect'),
     path("github/", github_login_redirect, name="github-login-redirect"),

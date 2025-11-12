@@ -41,7 +41,11 @@ const AppRoutes = () => {
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
+
+      {/* <Route path="/reset-password/:uid/:token" element={<ResetPassword />} /> */}
+
+      {/* <Route path="/reset-password" element={<ResetPassword />} /> */}
 
       {/* ✅ OAuth Callback Routes - Must match Django redirect URLs */}
       <Route path="/oauth/callback" element={<OAuthCallback />} />

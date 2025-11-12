@@ -1,34 +1,86 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import { ArrowLeft, Pencil } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/useToast";
+import axios from "@/utils/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const EditProfile = () => {
-  const [avatar, setAvatar] = useState("https://img.icons8.com/office/40/person-male.png");
-  const [name, setName] = useState("Sophia Carter");
-  const [bio, setBio] = useState(
-    "Creative soul with a passion for design and technology. Let's build something beautiful together."
-  );
-  const [email, setEmail] = useState("sophia.carter@example.com");
-  const [phone, setPhone] = useState("(555) 123-4567");
+  const navigate = useNavigate();
+  const { user, token } = useAuth();
+  const { showToast } = useToast();
 
-  // Handle avatar upload
+  const [avatar, setAvatar] = useState<string | null>(user?.profile_picture_url || null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [name, setName] = useState(user?.username || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [location, setLocation] = useState(user?.location || "");
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Fetch user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get("/auth/me/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // ✅ your backend returns { user: {...} }
+        const data = res.data.user || res.data;
+
+        setName(data.username || "");
+        setBio(data.bio || "");
+        setEmail(data.email || "");
+        setLocation(data.location || "");
+        setAvatar(data.profile_picture_url || null);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        showToast("Failed to load profile ❌", "error");
+      }
+    };
+
+    fetchProfile();
+  }, [token]);
+
+  // ✅ Handle avatar preview and store file
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setAvatar(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSave = () => {
-    console.log({
-      name,
-      bio,
-      email,
-      phone,
-      avatar,
-    });
+  // ✅ Save profile changes
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("username", name);
+      formData.append("bio", bio);
+      formData.append("location", location);
+      if (avatarFile) formData.append("profile_picture_url", avatarFile);
+
+      await axios.patch("/auth/me/update/", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      showToast("Profile updated successfully ✅", "success");
+      navigate("/app/dashboard");
+    } catch (error: any) {
+      console.error("Profile update error:", error.response || error);
+      showToast("Failed to update profile ❌", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,7 +88,7 @@ const EditProfile = () => {
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-5 md:px-8 max-w-xl mx-auto w-full">
         <button
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
           className="p-2 hover:bg-gray-100 rounded-full transition"
           aria-label="Go back"
         >
@@ -45,16 +97,16 @@ const EditProfile = () => {
         <h1 className="text-lg md:text-xl font-semibold text-gray-900">
           Edit Profile
         </h1>
-        <div className="w-6" /> {/* Spacer for alignment */}
+        <div className="w-6" />
       </header>
 
-      {/* Content */}
+      {/* Main Content */}
       <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-20">
         <div className="max-w-xl mx-auto w-full flex flex-col items-center">
           {/* Profile Picture */}
           <div className="relative mb-8">
             <img
-              src={avatar}
+              src={avatar || "https://img.icons8.com/office/40/person-male.png"}
               alt="Profile"
               className="w-32 h-32 md:w-36 md:h-36 rounded-full object-cover border border-gray-200"
             />
@@ -73,13 +125,10 @@ const EditProfile = () => {
             </label>
           </div>
 
-          {/* Form Fields */}
+          {/* Form */}
           <form className="space-y-5 w-full">
-            {/* Name */}
             <div>
-              <label className="block text-gray-800 font-medium mb-1">
-                Name
-              </label>
+              <label className="block text-gray-800 font-medium mb-1">Name</label>
               <input
                 type="text"
                 value={name}
@@ -88,7 +137,6 @@ const EditProfile = () => {
               />
             </div>
 
-            {/* Bio */}
             <div>
               <label className="block text-gray-800 font-medium mb-1">Bio</label>
               <textarea
@@ -99,28 +147,22 @@ const EditProfile = () => {
               />
             </div>
 
-            {/* Email */}
             <div>
-              <label className="block text-gray-800 font-medium mb-1">
-                Email
-              </label>
+              <label className="block text-gray-800 font-medium mb-1">Email</label>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                readOnly
+                className="w-full rounded-lg bg-gray-100 border border-gray-200 px-4 py-3 text-gray-500 cursor-not-allowed"
               />
             </div>
 
-            {/* Phone */}
             <div>
-              <label className="block text-gray-800 font-medium mb-1">
-                Phone
-              </label>
+              <label className="block text-gray-800 font-medium mb-1">Location</label>
               <input
                 type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
@@ -133,10 +175,11 @@ const EditProfile = () => {
         <div className="max-w-xl mx-auto">
           <Button
             onClick={handleSave}
+            disabled={loading}
             fullWidth
             className="bg-red-600 hover:bg-red-700 text-white py-3 text-lg rounded-xl"
           >
-            Save Changes
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>

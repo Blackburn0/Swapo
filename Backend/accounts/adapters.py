@@ -1,4 +1,4 @@
-# accounts/adapters.py - Simplified version
+# accounts/adapters.py
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth import get_user_model

@@ -32,3 +32,5 @@ userblocks/migrations/
 
 userSkills/__pycache__/
 userSkills/migrations/
+
+media/

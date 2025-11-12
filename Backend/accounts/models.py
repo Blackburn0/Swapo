@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 import uuid
+from django.conf import settings
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -43,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=128)
     bio = models.TextField(blank=True, null=True)
-    profile_picture_url = models.URLField(blank=True, null=True)
+    profile_picture_url = models.ImageField(blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     registration_date = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(blank=True, null=True)
@@ -68,3 +69,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class UserPrivacy(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="privacy")
+
+    public_profile = models.BooleanField(default=True)
+    public_skills = models.BooleanField(default=True)
+    public_trades = models.BooleanField(default=False)
+
+    CONTACT_CHOICES = [
+        ("Everyone", "Everyone"),
+        ("People with mutual skills", "People with mutual skills"),
+        ("No one", "No one"),
+    ]
+    contact_option = models.CharField(max_length=50, choices=CONTACT_CHOICES, default="Everyone")
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s privacy settings"
+
+

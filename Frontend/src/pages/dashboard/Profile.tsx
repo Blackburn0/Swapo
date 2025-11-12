@@ -82,7 +82,7 @@ const Profile = () => {
         <Settings
           size={20}
           className="absolute right-3 cursor-pointer text-gray-900 dark:text-gray-100"
-          onClick={() => navigate('/dashboard/settings')}
+          onClick={() => navigate('/app/dashboard/settings')}
         />
       </div>
 
@@ -104,7 +104,7 @@ const Profile = () => {
             <p className="text-xs">Joined 2021</p>
           </div>
         </div>
-        <Button className="w-full">Edit Profile</Button>
+        <Button className="w-full" onClick={() => navigate('/profile/edit')}>Edit Profile</Button>
       </div>
 
       {/* Navigation Tabs */}

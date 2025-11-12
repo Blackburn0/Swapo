@@ -6,7 +6,7 @@ from django.contrib.auth import password_validation
 
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User
+from .models import User, UserPrivacy
 from django.contrib.auth import password_validation
 import logging
 
@@ -139,3 +139,32 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
         password_validation.validate_password(data["new_password"])
         return data
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "bio",
+            "profile_picture_url",
+            "location",
+            "is_profile_complete",
+        ]
+        extra_kwargs = {
+            "is_profile_complete": {"read_only": True},  # Optional: system controlled
+        }
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        # Automatically mark profile as complete if key fields are filled
+        if instance.bio and instance.location and instance.profile_picture_url:
+            instance.is_profile_complete = True
+        instance.save()
+        return instance
+
+
+class UserPrivacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPrivacy
+        fields = ["public_profile", "public_skills", "public_trades", "contact_option"]
