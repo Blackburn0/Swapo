@@ -8,23 +8,8 @@ import {
   Star,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-const activeTradeData = [
-  {
-    img: 'https://img.icons8.com/office/40/person-male.png',
-    name: 'Alex',
-    desc: 'Photography for Web Design',
-    url: '',
-    senderProfileurl: '',
-  },
-  {
-    img: 'https://img.icons8.com/office/40/person-female.png',
-    name: 'Sarah',
-    desc: 'Copywriting for SEO',
-    url: '',
-    senderProfileurl: '',
-  },
-];
+import { useTrades } from '@/hooks/useTrades';
+import { useAuth } from '@/context/AuthContext';
 
 const quickLinksData = [
   {
@@ -40,7 +25,7 @@ const quickLinksData = [
   {
     icon: Star,
     title: 'My Reviews',
-    url: '/app/dashboard/reviews',
+    url: '/app/dashboard/profile',
   },
   {
     icon: Settings,
@@ -51,6 +36,16 @@ const quickLinksData = [
 
 const DashboardHome = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: trades, isLoading } = useTrades();
+
+  // Get the 2 most recent trades for the current user
+  const recentTrades = trades
+    ?.filter((trade: any) => 
+      trade.user1 === user?.id || trade.user2 === user?.id
+    )
+    .slice(0, 2) || [];
+
   return (
     <div className="min-h-screen bg-stone-50 pb-10 dark:bg-gray-900">
       {/* Profile Header */}
@@ -82,52 +77,68 @@ const DashboardHome = () => {
       {/* Active Trades */}
       <div className="mx-4 -mt-10 rounded-xl border-transparent bg-white p-4 text-black shadow-xl dark:bg-gray-800 dark:text-gray-100">
         <div className="flex justify-between space-y-4">
-          <h2 className="text-lg font-bold">Active Trades</h2>
-          <a className="cursor-pointer text-sm font-medium text-red-500 underline-offset-2 hover:underline">
+          <h2 className="text-lg font-bold">Recent Trades</h2>
+          <a 
+            className="cursor-pointer text-sm font-medium text-red-500 underline-offset-2 hover:underline"
+            onClick={() => navigate('/app/dashboard/trade')}
+          >
             View All
           </a>
         </div>
-        <div>
-          {activeTradeData.map((trade, idx) => (
-            <div className="flex items-center justify-between" key={idx}>
-              <div className="mb-4 flex items-center space-x-3 text-left">
-                <div
-                  className="cursor-pointer rounded-full border-transparent bg-stone-200 p-1 dark:bg-gray-600"
-                  onClick={() => navigate(trade.senderProfileurl)}
-                >
-                  <img
-                    src={trade.img}
-                    alt="User Profile Photo"
-                    className="h-8 w-8"
-                  />
+        
+        {isLoading ? (
+          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+            Loading trades...
+          </div>
+        ) : recentTrades.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400 mb-2">
+              No trades yet
+            </p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              Start by creating a listing to connect with others!
+            </p>
+          </div>
+        ) : (
+          <div>
+            {recentTrades.map((trade: any, idx: number) => {
+              // Determine the other user in the trade
+              const isUser1 = trade.user1 === user?.id;
+              const otherUserId = isUser1 ? trade.user2 : trade.user1;
+              
+              return (
+                <div className="flex items-center justify-between" key={trade.trade_id}>
+                  <div className="mb-4 flex items-center space-x-3 text-left">
+                    <div
+                      className="cursor-pointer rounded-full border-transparent bg-stone-200 p-1 dark:bg-gray-600"
+                      onClick={() => navigate(`/app/dashboard/profile/${otherUserId}`)}
+                    >
+                      <img
+                        src="https://img.icons8.com/office/40/person-male.png"
+                        alt="User Profile"
+                        className="h-8 w-8"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                        Trade #{trade.trade_id}
+                      </h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Status: {trade.status}
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`cursor-pointer ${idx === 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}
+                    onClick={() => navigate(`/app/dashboard/trade/${trade.trade_id}`)}
+                  >
+                    {idx === 0 ? <MessageSquareDot size={20} /> : <MessageSquare size={20} />}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                    Trade with {trade.name}
-                  </h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {trade.desc}
-                  </p>
-                </div>
-              </div>
-              {idx === 0 ? (
-                <div
-                  className="cursor-pointer text-red-600 dark:text-red-400"
-                  onClick={() => navigate(trade.url)}
-                >
-                  <MessageSquareDot size={20} />
-                </div>
-              ) : (
-                <div
-                  className="cursor-pointer text-gray-700 dark:text-gray-300"
-                  onClick={() => navigate(trade.url)}
-                >
-                  <MessageSquare size={20} />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Quick Links */}

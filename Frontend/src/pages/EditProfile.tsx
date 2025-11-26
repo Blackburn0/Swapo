@@ -14,6 +14,9 @@ const EditProfile = () => {
   const [avatar, setAvatar] = useState<string | null>(user?.profile_picture_url || null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [name, setName] = useState(user?.username || "");
+  const [firstName, setFirstName] = useState(user?.first_name || "");
+  const [lastName, setLastName] = useState(user?.last_name || "");
+  const [role, setRole] = useState(user?.role || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [email, setEmail] = useState(user?.email || "");
   const [location, setLocation] = useState(user?.location || "");
@@ -31,6 +34,9 @@ const EditProfile = () => {
         const data = res.data.user || res.data;
 
         setName(data.username || "");
+        setFirstName(data.first_name || "");
+        setLastName(data.last_name || "");
+        setRole(data.role || "");
         setBio(data.bio || "");
         setEmail(data.email || "");
         setLocation(data.location || "");
@@ -62,6 +68,9 @@ const EditProfile = () => {
 
       const formData = new FormData();
       formData.append("username", name);
+      formData.append("first_name", firstName);
+      formData.append("last_name", lastName);
+      formData.append("role", role);
       formData.append("bio", bio);
       formData.append("location", location);
       if (avatarFile) formData.append("profile_picture_url", avatarFile);
@@ -128,11 +137,44 @@ const EditProfile = () => {
           {/* Form */}
           <form className="space-y-5 w-full">
             <div>
-              <label className="block text-gray-800 font-medium mb-1">Name</label>
+              <label className="block text-gray-800 font-medium mb-1">Username</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-800 font-medium mb-1">First Name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter your first name"
+                className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-800 font-medium mb-1">Last Name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Enter your last name"
+                className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-800 font-medium mb-1">Role</label>
+              <input
+                type="text"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                placeholder="e.g. Frontend Developer, UI/UX Designer"
                 className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>

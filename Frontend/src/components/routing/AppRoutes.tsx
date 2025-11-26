@@ -5,7 +5,7 @@ import Signup from '../authentication/Signup';
 import Login from '../authentication/Login';
 import ForgotPassword from '../authentication/ForgotPassword';
 import ResetPassword from '../authentication/ResetPassword';
-import OAuthCallback from '@/pages/OAuthCallback'; // ✅ Add this
+import OAuthCallback from '@/pages/OAuthCallback';
 import TeamInfo from '@/pages/TeamInfo';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import DashboardHome from '@/pages/dashboard/Home';
@@ -43,17 +43,9 @@ const AppRoutes = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
 
-      {/* <Route path="/reset-password/:uid/:token" element={<ResetPassword />} /> */}
-
-      {/* <Route path="/reset-password" element={<ResetPassword />} /> */}
-
-      {/* ✅ OAuth Callback Routes - Must match Django redirect URLs */}
       <Route path="/oauth/callback" element={<OAuthCallback />} />
       <Route path="/dashboard" element={<OAuthCallback />} /> 
       <Route path="/onboarding" element={<OAuthCallback />} /> 
-
-      {/* <Route path="/oauth/callback" element={<OAuthCallback />} /> */}
-
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>

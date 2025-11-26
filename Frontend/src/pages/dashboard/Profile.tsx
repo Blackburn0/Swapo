@@ -12,8 +12,10 @@ import {
   ThumbsUp,
   Video,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "@/context/AuthContext";
+import axios from "@/utils/axiosInstance";
 
 const nav = ['All', 'Offered Skills', 'Desired Skills', 'Portfolio'];
 
@@ -35,35 +37,91 @@ const portfolioData = [
   { url: '', image: '' },
 ];
 
-const reviewers = [
-  {
-    img: 'https://img.icons8.com/office/40/person-male.png',
-    name: 'Ethan Harper',
-    date: '2 months ago',
-    stars: 5,
-    review:
-      'Sophia is an exceptional designer. Her attention to detail and creative solutions truly elvated our project. Highly recommend!',
-    likes: 12,
-    dislikes: 1,
-  },
-  {
-    img: 'https://img.icons8.com/office/40/person-female.png',
-    name: 'Olivia Bennett',
-    date: '1 months ago',
-    stars: 4,
-    review:
-      'Sophia deliverd great work, but there were some communication challenges. Overall, satisfied with the final product.',
-    likes: 8,
-    dislikes: 2,
-  },
-];
-
 const Profile = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('All');
+  const [reviewers, setReviewers] = useState([
+    {
+      img: 'https://img.icons8.com/office/40/person-male.png',
+      name: 'Ethan Harper',
+      date: '2 months ago',
+      stars: 5,
+      review:
+        'Sophia is an exceptional designer. Her attention to detail and creative solutions truly elvated our project. Highly recommend!',
+      likes: 12,
+      dislikes: 1,
+    },
+    {
+      img: 'https://img.icons8.com/office/40/person-female.png',
+      name: 'Olivia Bennett',
+      date: '1 months ago',
+      stars: 4,
+      review:
+        'Sophia deliverd great work, but there were some communication challenges. Overall, satisfied with the final product.',
+      likes: 8,
+      dislikes: 2,
+    },
+  ]);
 
-  const rating = 4.5;
   const maxStars = 5;
+
+  // Calculate overall rating from reviews
+  const rating = reviewers.length > 0 
+    ? reviewers.reduce((sum, r) => sum + r.stars, 0) / reviewers.length 
+    : 0;
+
+  // Calculate star distribution percentages
+  const getStarDistribution = () => {
+    const distribution: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviewers.forEach((r) => {
+      if (distribution[r.stars] !== undefined) {
+        distribution[r.stars]++;
+      }
+    });
+    
+    const total = reviewers.length || 1;
+    return Object.fromEntries(
+      Object.entries(distribution).map(([star, count]) => [
+        star,
+        Math.round((count / total) * 100),
+      ])
+    );
+  };
+
+  const starDistribution = getStarDistribution();
+
+  // Handle star click in individual reviews
+  const handleStarClick = (reviewIndex: number, starRating: number) => {
+    const updatedReviewers = [...reviewers];
+    updatedReviewers[reviewIndex].stars = starRating;
+    setReviewers(updatedReviewers);
+  };
+
+
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get("/auth/me");
+        setProfile(res.data.user);
+      } catch (err) {
+        console.error("Failed to load user profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (loading || !profile) {
+    return <p className="p-10 text-center">Loading profile...</p>;
+  }
+
+  const joinedYear = new Date(profile.registration_date).getFullYear();
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col bg-stone-50/50 py-2 pb-10 dark:bg-gray-900">
@@ -97,11 +155,11 @@ const Profile = () => {
         </div>
         <div className="my-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            John Doe
+            {profile.username}
           </h1>
           <div className="font-medium text-gray-600 dark:text-gray-300">
-            <p className="mt-[1px] mb-1 text-sm">UX Designer</p>
-            <p className="text-xs">Joined 2021</p>
+            <p className="mt-[1px] mb-1 text-sm">  {profile.bio || "No bio yet"} </p>
+            {/* <p className="text-xs"> Joined {joinedYear} </p> */}
           </div>
         </div>
         <Button className="w-full" onClick={() => navigate('/profile/edit')}>Edit Profile</Button>
@@ -247,14 +305,7 @@ const Profile = () => {
           {/* Review Chart */}
           <div className="mt-6 space-y-1.5">
             {[5, 4, 3, 2, 1].map((star) => {
-              const percentMap: Record<number, number> = {
-                5: 70,
-                4: 20,
-                3: 5,
-                2: 3,
-                1: 2,
-              };
-              const percent = percentMap[star];
+              const percent = starDistribution[star] || 0;
               return (
                 <div key={star} className="flex items-center space-x-2">
                   <span className="w-4 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -262,7 +313,7 @@ const Profile = () => {
                   </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-red-100/50 dark:bg-red-900/50">
                     <div
-                      className="h-2 bg-red-500 dark:bg-red-400"
+                      className="h-2 bg-red-500 dark:bg-red-400 transition-all duration-300"
                       style={{ width: `${percent}%` }}
                     ></div>
                   </div>
@@ -302,12 +353,14 @@ const Profile = () => {
                   {Array.from({ length: 5 }).map((_, starIdx) => (
                     <Star
                       key={starIdx}
-                      size={14}
-                      className={
+                      size={16}
+                      className={`cursor-pointer transition-colors ${
                         starIdx < reviewer.stars
                           ? 'text-red-700 dark:text-red-400'
                           : 'text-gray-300 dark:text-gray-600'
-                      }
+                      } hover:text-red-500 dark:hover:text-red-300`}
+                      fill={starIdx < reviewer.stars ? 'currentColor' : 'none'}
+                      onClick={() => handleStarClick(idx, starIdx + 1)}
                     />
                   ))}
                 </div>
