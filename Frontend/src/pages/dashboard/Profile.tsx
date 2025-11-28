@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from "@/context/AuthContext";
-import axios from "@/utils/axiosInstance";
+import { useAuth } from '@/context/AuthContext';
+import axios from '@/utils/axiosInstance';
 
 const nav = ['All', 'Offered Skills', 'Desired Skills', 'Portfolio'];
 
@@ -39,7 +39,7 @@ const portfolioData = [
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('All');
   const [reviewers, setReviewers] = useState([
     {
@@ -67,25 +67,32 @@ const Profile = () => {
   const maxStars = 5;
 
   // Calculate overall rating from reviews
-  const rating = reviewers.length > 0 
-    ? reviewers.reduce((sum, r) => sum + r.stars, 0) / reviewers.length 
-    : 0;
+  const rating =
+    reviewers.length > 0
+      ? reviewers.reduce((sum, r) => sum + r.stars, 0) / reviewers.length
+      : 0;
 
   // Calculate star distribution percentages
   const getStarDistribution = () => {
-    const distribution: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    const distribution: Record<number, number> = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
     reviewers.forEach((r) => {
       if (distribution[r.stars] !== undefined) {
         distribution[r.stars]++;
       }
     });
-    
+
     const total = reviewers.length || 1;
     return Object.fromEntries(
       Object.entries(distribution).map(([star, count]) => [
         star,
         Math.round((count / total) * 100),
-      ])
+      ]),
     );
   };
 
@@ -98,17 +105,16 @@ const Profile = () => {
     setReviewers(updatedReviewers);
   };
 
-
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get("/auth/me");
+        const res = await axios.get('/auth/me');
         setProfile(res.data.user);
       } catch (err) {
-        console.error("Failed to load user profile:", err);
+        console.error('Failed to load user profile:', err);
       } finally {
         setLoading(false);
       }
@@ -158,11 +164,16 @@ const Profile = () => {
             {profile.username}
           </h1>
           <div className="font-medium text-gray-600 dark:text-gray-300">
-            <p className="mt-[1px] mb-1 text-sm">  {profile.bio || "No bio yet"} </p>
+            <p className="mt-[1px] mb-1 text-sm">
+              {' '}
+              {profile.bio || 'No bio yet'}{' '}
+            </p>
             {/* <p className="text-xs"> Joined {joinedYear} </p> */}
           </div>
         </div>
-        <Button className="w-full" onClick={() => navigate('/profile/edit')}>Edit Profile</Button>
+        <Button className="w-full" onClick={() => navigate('/profile/edit')}>
+          Edit Profile
+        </Button>
       </div>
 
       {/* Navigation Tabs */}
@@ -313,7 +324,7 @@ const Profile = () => {
                   </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-red-100/50 dark:bg-red-900/50">
                     <div
-                      className="h-2 bg-red-500 dark:bg-red-400 transition-all duration-300"
+                      className="h-2 bg-red-500 transition-all duration-300 dark:bg-red-400"
                       style={{ width: `${percent}%` }}
                     ></div>
                   </div>

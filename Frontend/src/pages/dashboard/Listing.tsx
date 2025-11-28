@@ -1,56 +1,100 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, X, Tag, Briefcase } from 'lucide-react';
 import clsx from 'clsx';
 import Button from '@/components/ui/Button';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
-interface SkillListing {
-  id: number;
-  name: string;
-  role: string;
-  offering: string;
-  seeking: string;
-  image: string;
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
+interface Listing {
+  listing_id: number;
+  user_id: number;
+  skill_offered: number;
+  skill_offered_name: string;
+  skill_desired: number;
+  skill_desired_name: string;
+  title: string;
+  description: string;
+  status: string;
+  creation_date: string;
+  last_updated: string;
+  location_preference: string;
 }
-
-const listings: SkillListing[] = [
-  {
-    id: 1,
-    name: 'Sophia Carter',
-    role: 'UI/UX Designer',
-    offering: 'UI/UX Design',
-    seeking: 'Frontend Development',
-    image: 'https://img.icons8.com/office/40/person-male.png',
-  },
-  {
-    id: 2,
-    name: 'Ethan Bennett',
-    role: 'Web Developer',
-    offering: 'React Development',
-    seeking: 'Copywriting',
-    image: 'https://img.icons8.com/office/40/person-male.png',
-  },
-  {
-    id: 3,
-    name: 'Lily Anderson',
-    role: 'Digital Marketer',
-    offering: 'Social Media Marketing',
-    seeking: 'Logo Design',
-    image: 'https://img.icons8.com/office/40/person-male.png',
-  },
-];
 
 const categories = ['All', 'Design', 'Development', 'Marketing'];
 
-const Listing = () => {
+// Function to map skill name to a category
+const getCategory = (skillName: string) => {
+  if (!skillName) return 'Other';
+  skillName = skillName.toLowerCase();
+  if (skillName.includes('design')) return 'Design';
+  if (skillName.includes('developer') || skillName.includes('engineer'))
+    return 'Development';
+  if (
+    skillName.includes('marketing') ||
+    skillName.includes('seo') ||
+    skillName.includes('social')
+  )
+    return 'Marketing';
+  return 'Other';
+};
+
+const ListingPage = () => {
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+
   const [activeCategory, setActiveCategory] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // create a /api/v1/me/ endpoint in backend to get
+  // {
+  //   "id": 51,
+  //   "username": "gift",
+  //   "email": "gift@gmail.com"
+  // }
+
+  console.log('Current User', currentUser);
+  console.log('lisitngs', listings);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/listings/`);
+        if (!res.ok) throw new Error('Failed to fetch listings');
+        const data: Listing[] = await res.json();
+        setListings(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListings();
+  }, []);
+
+  // Map API data to component format
+  const mappedListings = listings.map((l) => ({
+    listing_id: l.listing_id,
+    user_id: l.user_id,
+    id: l.listing_id,
+    name: `User ${l.user_id}`,
+    role: l.title || 'No Title',
+    offering: l.skill_offered_name,
+    seeking: l.skill_desired_name,
+    image: 'https://img.icons8.com/office/40/person-female.png',
+  }));
 
   // Filtered results
-  const filteredListings = listings.filter((l) => {
+  const filteredListings = mappedListings.filter((l) => {
+    const listingCategory = getCategory(l.offering);
     const matchesCategory =
-      activeCategory === 'All' ||
-      l.offering.toLowerCase().includes(activeCategory.toLowerCase());
+      activeCategory === 'All' || listingCategory === activeCategory;
     const matchesSearch =
       l.name.toLowerCase().includes(search.toLowerCase()) ||
       l.offering.toLowerCase().includes(search.toLowerCase()) ||
@@ -113,66 +157,83 @@ const Listing = () => {
       </div>
 
       {/* Skill Cards */}
-      <div className="grid gap-5">
-        {filteredListings.map((listing) => (
-          <div
-            key={listing.id}
-            className="rounded-2xl border border-gray-100 p-5 shadow-sm transition hover:shadow-md"
-          >
-            <div className="items-left flex gap-4">
-              <img
-                src={listing.image}
-                alt={listing.name}
-                className="h-14 w-14 rounded-full object-cover"
-              />
-              <div className="text-left">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {listing.name}
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-300">
-                  {listing.role}
-                </p>
-              </div>
-            </div>
+      {loading ? (
+        <p className="text-center text-gray-500">Loading listings...</p>
+      ) : (
+        <div className="grid gap-5">
+          {filteredListings.map((listing) => {
+            const isOwner = currentUser?.id === listing.user_id;
 
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <Tag size={16} className="text-red-500" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    Offering:
-                  </span>{' '}
-                  {listing.offering}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Briefcase
-                  size={16}
-                  className="text-gray-500 dark:text-white"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    Seeking:
-                  </span>{' '}
-                  {listing.seeking}
-                </span>
-              </div>
-            </div>
+            return (
+              <div
+                key={listing.id}
+                className="rounded-2xl border border-gray-100 p-5 shadow-sm transition hover:shadow-md"
+              >
+                <div className="items-left flex gap-4">
+                  <img
+                    src={listing.image}
+                    alt={listing.name}
+                    className="h-14 w-14 rounded-full object-cover"
+                  />
+                  <div className="text-left">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {listing.name}
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-300">
+                      {listing.role}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="mt-5">
-              <Button className="w-full rounded-xl bg-red-600 py-2 text-sm text-white hover:bg-red-700">
-                View Profile
-              </Button>
-            </div>
-          </div>
-        ))}
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Tag size={16} className="text-red-500" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        Offering:
+                      </span>{' '}
+                      {listing.offering}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Briefcase
+                      size={16}
+                      className="text-gray-500 dark:text-white"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        Seeking:
+                      </span>{' '}
+                      {listing.seeking}
+                    </span>
+                  </div>
+                </div>
 
-        {filteredListings.length === 0 && (
-          <p className="col-span-full mt-10 text-center text-gray-500">
-            No results found.
-          </p>
-        )}
-      </div>
+                <div className="mt-5">
+                  <Button
+                    className="w-full rounded-xl bg-red-600 py-2 text-sm text-white hover:bg-red-700"
+                    onClick={() => {
+                      isOwner
+                        ? navigate(`/app/dashboard/profile`)
+                        : navigate(
+                            `/app/dashboard/profile/${listing.listing_id}`,
+                          );
+                    }}
+                  >
+                    {isOwner ? 'Your Profile' : 'View Profile'}
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+
+          {filteredListings.length === 0 && (
+            <p className="col-span-full mt-10 text-center text-gray-500">
+              No results found.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Filter Drawer */}
       {isFilterOpen && (
@@ -219,4 +280,4 @@ const Listing = () => {
   );
 };
 
-export default Listing;
+export default ListingPage;

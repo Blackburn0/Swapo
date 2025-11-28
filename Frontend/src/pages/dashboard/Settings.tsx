@@ -21,7 +21,7 @@ const account = [
     icon: User2,
     title: 'Profile',
     desc: 'Update your profile information',
-    url: '/profile/edit',
+    url: '/app/dashboard/profile',
   },
   {
     icon: LockKeyhole,
@@ -63,7 +63,7 @@ const support = [
     icon: Mail,
     title: 'Contact',
     desc: 'Contact us for support',
-    url: '/dashboard/settings/contact',
+    url: '/app/dashboard/settings/contact',
   },
 ];
 

@@ -1,4 +1,5 @@
 import Button from '@/components/ui/Button';
+import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,6 +22,7 @@ const account = [
 
 const TradeDetails = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <div className="mx-auto my-2 flex min-h-screen max-w-xl flex-col pb-17">
@@ -86,7 +88,9 @@ const TradeDetails = () => {
               className="h-16 w-16 rounded-full"
             />
             <div>
-              <p className="font-bold">John Doe</p>
+              <p className="font-bold">
+                {isAuthenticated ? user?.email : 'John Doe'}
+              </p>
               <p className="font-medium text-red-800">Photographer</p>
             </div>
           </div>
@@ -94,12 +98,12 @@ const TradeDetails = () => {
 
         {/* CTA Buttons */}
         <div className="flex space-x-4">
-          <Button onClick={() => navigate('/dashboard/propose-trade')}>
+          <Button onClick={() => navigate('/app/dashboard/propose-trade')}>
             Propose Trade
           </Button>
           <Button
             variant="secondary"
-            onClick={() => navigate('/dashboard/messages')}
+            onClick={() => navigate('/app/dashboard/messages')}
           >
             Message
           </Button>

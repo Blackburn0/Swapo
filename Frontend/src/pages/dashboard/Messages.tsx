@@ -3,17 +3,30 @@ import { ChevronLeft, Image, Phone, SendHorizonal } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
 import { useMessageList } from '@/hooks/useMessageList';
 import { useEnterKey } from '@/hooks/useEnterKey';
+import { useLocation } from 'react-router-dom';
 
 const Messages = () => {
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+  const location = useLocation();
+  const state = location.state as { userId?: number; username?: string };
+
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(
+    state?.userId || null,
+  );
   const { data: chatList = [], isLoading: listLoading } = useMessageList();
-  const { data: messages = [], sendMessage, isLoading: chatLoading } = useMessages(selectedChatId);
+  const {
+    data: messages = [],
+    sendMessage,
+    isLoading: chatLoading,
+  } = useMessages(selectedChatId);
   const [messageText, setMessageText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleSend = async () => {
     if (!messageText.trim() || !selectedChatId) return;
-    await sendMessage.mutateAsync({ content: messageText, receiver: selectedChatId });
+    await sendMessage.mutateAsync({
+      content: messageText,
+      receiver: selectedChatId,
+    });
     setMessageText('');
   };
 
@@ -23,38 +36,47 @@ const Messages = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (listLoading) return <p className="text-center mt-10">Loading messages...</p>;
+  if (listLoading)
+    return <p className="mt-10 text-center">Loading messages...</p>;
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-70px)] max-w-4xl bg-stone-50 dark:bg-gray-900">
+    <div className="mx-auto flex h-[calc(100vh-60px)] max-w-4xl bg-stone-50 dark:bg-gray-900">
       {/* Left: Message List */}
-      <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
-        <h2 className="p-4 text-lg font-bold text-gray-900 dark:text-gray-100 border-b dark:border-gray-700">Chats</h2>
+      <div className="w-1/3 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
+        <h2 className="border-b p-4 text-lg font-bold text-gray-900 dark:border-gray-700 dark:text-gray-100">
+          Chats
+        </h2>
         {chatList.length === 0 && (
           <p className="p-4 text-gray-500">No messages yet</p>
         )}
         {chatList.map((chat: any) => (
           <div
             key={chat.message_id}
-            className={`cursor-pointer border-b border-gray-100 dark:border-gray-700 p-4 hover:bg-gray-100 dark:hover:bg-gray-800 ${
-              selectedChatId === chat.message_id ? 'bg-gray-100 dark:bg-gray-800' : ''
+            className={`cursor-pointer border-b border-gray-100 p-4 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800 ${
+              selectedChatId === chat.message_id
+                ? 'bg-gray-100 dark:bg-gray-800'
+                : ''
             }`}
             onClick={() => setSelectedChatId(chat.message_id)}
           >
-            <p className="font-medium text-gray-900 dark:text-gray-100">{chat.content}</p>
-            <p className="text-xs text-gray-500">{new Date(chat.timestamp).toLocaleString()}</p>
+            <p className="text-left font-medium text-gray-900 dark:text-gray-100">
+              {chat.content}
+            </p>
+            <p className="mt-1 text-left text-xs text-gray-500">
+              {new Date(chat.timestamp).toLocaleString()}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Right: Chat Details */}
-      <div className="flex-1 flex flex-col justify-between">
+      <div className="flex flex-1 flex-col justify-between">
         {!selectedChatId ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex h-full items-center justify-center text-gray-500">
             Select a chat to view messages
           </div>
         ) : chatLoading ? (
-          <p className="text-center mt-10">Loading chat...</p>
+          <p className="mt-10 text-center">Loading chat...</p>
         ) : (
           <>
             {/* Header */}
@@ -87,7 +109,10 @@ const Messages = () => {
                   >
                     {!msg.is_sender && (
                       <img
-                        src={msg.sender_avatar || 'https://img.icons8.com/office/40/person-male.png'}
+                        src={
+                          msg.sender_avatar ||
+                          'https://img.icons8.com/office/40/person-male.png'
+                        }
                         alt={msg.sender_name}
                         className="h-8 w-8 rounded-full"
                       />
@@ -103,7 +128,10 @@ const Messages = () => {
                     </div>
                     {msg.is_sender && (
                       <img
-                        src={msg.sender_avatar || 'https://img.icons8.com/office/40/person-female.png'}
+                        src={
+                          msg.sender_avatar ||
+                          'https://img.icons8.com/office/40/person-female.png'
+                        }
                         alt="You"
                         className="h-8 w-8 rounded-full"
                       />
@@ -124,7 +152,7 @@ const Messages = () => {
             </div>
 
             {/* Message Input */}
-            <div className="flex items-center space-x-2 border-t border-gray-200 bg-stone-50 px-2 pt-2 dark:border-gray-700 dark:bg-gray-900">
+            <div className="mb-2 flex items-center space-x-2 border-t border-gray-200 bg-stone-50 px-2 pt-2 dark:border-gray-700 dark:bg-gray-900">
               <div className="flex flex-1 items-center rounded-full bg-gray-200 px-3 py-2 dark:bg-gray-700">
                 <input
                   type="text"

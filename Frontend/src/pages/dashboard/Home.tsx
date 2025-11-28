@@ -15,7 +15,7 @@ const quickLinksData = [
   {
     icon: PlusCircle,
     title: 'New Listing',
-    url: '/app/dashboard/listing',
+    url: '/app/dashboard/create-listing',
   },
   {
     icon: ArrowLeftRight,
@@ -36,16 +36,18 @@ const quickLinksData = [
 
 const DashboardHome = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { data: trades, isLoading } = useTrades();
 
   // Get the 2 most recent trades for the current user
-  const recentTrades = trades
-    ?.filter((trade: any) => 
-      trade.user1 === user?.id || trade.user2 === user?.id
-    )
-    .slice(0, 2) || [];
+  const recentTrades =
+    trades
+      ?.filter(
+        (trade: any) => trade.user1 === user?.id || trade.user2 === user?.id,
+      )
+      .slice(0, 2) || [];
 
+  console.log('User', user);
   return (
     <div className="min-h-screen bg-stone-50 pb-10 dark:bg-gray-900">
       {/* Profile Header */}
@@ -53,7 +55,7 @@ const DashboardHome = () => {
         <div className="flex items-center justify-center space-x-3">
           <div
             className="cursor-pointer rounded-full border bg-white p-1"
-            onClick={() => navigate('/dashboard/profile')}
+            onClick={() => navigate('/app/dashboard/profile')}
           >
             <img
               src="https://img.icons8.com/office/40/person-male.png"
@@ -61,9 +63,11 @@ const DashboardHome = () => {
               className="h-8 w-8"
             />
           </div>
-          <div>
+          <div className="flex flex-col items-start">
             <h1 className="text-sm">Welcome back,</h1>
-            <p className="text-2xl font-medium">John Doe</p>
+            <p className="text-2xl font-medium">
+              {isAuthenticated ? user?.username : 'User'}
+            </p>
           </div>
         </div>
         <div
@@ -78,21 +82,21 @@ const DashboardHome = () => {
       <div className="mx-4 -mt-10 rounded-xl border-transparent bg-white p-4 text-black shadow-xl dark:bg-gray-800 dark:text-gray-100">
         <div className="flex justify-between space-y-4">
           <h2 className="text-lg font-bold">Recent Trades</h2>
-          <a 
+          <a
             className="cursor-pointer text-sm font-medium text-red-500 underline-offset-2 hover:underline"
             onClick={() => navigate('/app/dashboard/trade')}
           >
             View All
           </a>
         </div>
-        
+
         {isLoading ? (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             Loading trades...
           </div>
         ) : recentTrades.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400 mb-2">
+            <p className="mb-2 text-gray-500 dark:text-gray-400">
               No trades yet
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500">
@@ -105,13 +109,18 @@ const DashboardHome = () => {
               // Determine the other user in the trade
               const isUser1 = trade.user1 === user?.id;
               const otherUserId = isUser1 ? trade.user2 : trade.user1;
-              
+
               return (
-                <div className="flex items-center justify-between" key={trade.trade_id}>
+                <div
+                  className="flex items-center justify-between"
+                  key={trade.trade_id}
+                >
                   <div className="mb-4 flex items-center space-x-3 text-left">
                     <div
                       className="cursor-pointer rounded-full border-transparent bg-stone-200 p-1 dark:bg-gray-600"
-                      onClick={() => navigate(`/app/dashboard/profile/${otherUserId}`)}
+                      onClick={() =>
+                        navigate(`/app/dashboard/profile/${otherUserId}`)
+                      }
                     >
                       <img
                         src="https://img.icons8.com/office/40/person-male.png"
@@ -130,9 +139,15 @@ const DashboardHome = () => {
                   </div>
                   <div
                     className={`cursor-pointer ${idx === 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}
-                    onClick={() => navigate(`/app/dashboard/trade/${trade.trade_id}`)}
+                    onClick={() =>
+                      navigate(`/app/dashboard/trade/${trade.trade_id}`)
+                    }
                   >
-                    {idx === 0 ? <MessageSquareDot size={20} /> : <MessageSquare size={20} />}
+                    {idx === 0 ? (
+                      <MessageSquareDot size={20} />
+                    ) : (
+                      <MessageSquare size={20} />
+                    )}
                   </div>
                 </div>
               );

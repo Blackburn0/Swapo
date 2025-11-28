@@ -281,8 +281,10 @@ AUTH_USER_MODEL = "accounts.User"
 
 # Extend token lifetime (dev only)
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,  # optional: issue new refresh token on each use
+    'BLACKLIST_AFTER_ROTATION': True,  # optional: invalidate old refresh tokens
     'USER_ID_FIELD': 'user_id',
     'USER_ID_CLAIM': 'user_id',
 }
