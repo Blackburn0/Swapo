@@ -1,4 +1,5 @@
 import Button from '@/components/ui/Button';
+import { useAuth } from '@/context/AuthContext';
 import {
   ChevronLeft,
   Code,
@@ -61,6 +62,7 @@ const reviewers = [
 const Profile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('All');
+  const { user, isAuthenticated } = useAuth();
 
   const rating = 4.5;
   const maxStars = 5;
@@ -82,7 +84,7 @@ const Profile = () => {
         <Settings
           size={20}
           className="absolute right-3 cursor-pointer text-gray-900 dark:text-gray-100"
-          onClick={() => navigate('/dashboard/settings')}
+          onClick={() => navigate('/app/dashboard/settings')}
         />
       </div>
 
@@ -97,7 +99,7 @@ const Profile = () => {
         </div>
         <div className="my-5">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            John Doe
+            {isAuthenticated ? user?.username : 'John Doe'}
           </h1>
           <div className="font-medium text-gray-600 dark:text-gray-300">
             <p className="mt-[1px] mb-1 text-sm">UX Designer</p>

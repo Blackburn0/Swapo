@@ -12,10 +12,22 @@ class UserBlockViewSet(viewsets.ModelViewSet):
   permission_classes = [permissions.IsAuthenticated]
 
   def get_queryset(self):
-    # Return all blocks initiated by the current user
-    return UserBlock.objects.filter(blocker=self.request.user)
+    queryset = UserBlock.objects.filter(blocker=self.request.user)
+    blocked_id = self.request.query_params.get('blocked')
+    if blocked_id:
+      queryset = queryset.filter(blocked_id=blocked_id)
+    return queryset
+
 
   def perform_create(self, serializer):
+    blocker = self.request.user
+    blocked = serializer.validated_data['blocked']
+
+    # Check if the block already exists
+    block_exists = UserBlock.objects.filter(blocker=blocker, blocked=blocked).exists()
+    if block_exists:
+      return
+
     # Automatically set the blocker to the current user
     serializer.save(blocker=self.request.user)
 

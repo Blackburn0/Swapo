@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   [key: string]: any;
@@ -36,8 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const userJson = localStorage.getItem("user");
+    const token = localStorage.getItem('authToken');
+    const userJson = localStorage.getItem('user');
     if (token) {
       setAuthState({
         isAuthenticated: true,
@@ -49,8 +55,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (token: string, user: User) => {
-    localStorage.setItem("authToken", token);
-    if (user) localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem('authToken', token);
+    if (user) localStorage.setItem('user', JSON.stringify(user));
     setAuthState({
       isAuthenticated: true,
       token,
@@ -59,11 +65,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
     setAuthState(defaultState);
-    navigate("/login");
+    navigate('/login');
   };
 
   const value: AuthContextType = {
@@ -75,11 +81,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 };

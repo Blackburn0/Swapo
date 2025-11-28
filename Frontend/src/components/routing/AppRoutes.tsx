@@ -30,6 +30,7 @@ import EditProfile from '@/pages/EditProfile';
 import CreateListing from '@/pages/CreateListing';
 import DeleteAccount from '@/pages/DeleteAccount';
 import ProtectedRoute from './ProtectedRoute';
+import OtherUserProfile from '@/pages/dashboard/OtherUserProfile';
 
 const AppRoutes = () => {
   return (
@@ -45,11 +46,10 @@ const AppRoutes = () => {
 
       {/* ✅ OAuth Callback Routes - Must match Django redirect URLs */}
       <Route path="/oauth/callback" element={<OAuthCallback />} />
-      <Route path="/dashboard" element={<OAuthCallback />} /> 
-      <Route path="/onboarding" element={<OAuthCallback />} /> 
+      <Route path="/dashboard" element={<OAuthCallback />} />
+      <Route path="/onboarding" element={<OAuthCallback />} />
 
       {/* <Route path="/oauth/callback" element={<OAuthCallback />} /> */}
-
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
@@ -57,10 +57,12 @@ const AppRoutes = () => {
         <Route path="/app/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="trade" element={<Trade />} />
+          <Route path="create-listing" element={<CreateListing />} />
           <Route path="listing" element={<Listing />} />
           <Route path="filter-listing" element={<Filters />} />
           <Route path="messages" element={<Messages />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/:listingId" element={<OtherUserProfile />} />
           <Route path="trade-details" element={<TradeDetails />} />
           <Route path="propose-trade" element={<ProposeTrade />} />
           <Route path="settings" element={<Settings />} />
@@ -75,7 +77,6 @@ const AppRoutes = () => {
 
         <Route path="/app/onboarding" element={<Onboarding />} />
         <Route path="/app/dashboard/notification" element={<Notifications />} />
-        <Route path="/create-listing" element={<CreateListing />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
       </Route>

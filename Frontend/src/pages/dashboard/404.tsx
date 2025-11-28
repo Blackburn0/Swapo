@@ -58,7 +58,7 @@ const NotFound = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/trade"
+              to="/app/dashboard/trade"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive
@@ -72,7 +72,7 @@ const NotFound = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/listing"
+              to="/app/dashboard/listing"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive
@@ -86,7 +86,7 @@ const NotFound = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/messages"
+              to="/app/dashboard/messages"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive
@@ -100,7 +100,7 @@ const NotFound = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/profile"
+              to="/app/dashboard/profile"
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-2 py-1 transition-colors ${
                   isActive

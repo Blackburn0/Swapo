@@ -84,7 +84,7 @@ const ProposeTrade = () => {
 
         {/* CTA Buttons */}
         <div>
-          <Button onClick={() => navigate('/dashboard/propose-trade')}>
+          <Button onClick={() => navigate('/app/dashboard/propose-trade')}>
             Propose Trade
           </Button>
         </div>

@@ -1,3 +1,4 @@
+import { useAuth } from '@/context/AuthContext';
 import {
   ArrowLeftRight,
   Bell,
@@ -30,7 +31,7 @@ const quickLinksData = [
   {
     icon: PlusCircle,
     title: 'New Listing',
-    url: '/app/dashboard/listing',
+    url: '/app/dashboard/create-listing',
   },
   {
     icon: ArrowLeftRight,
@@ -51,6 +52,8 @@ const quickLinksData = [
 
 const DashboardHome = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  console.log('User', user);
   return (
     <div className="min-h-screen bg-stone-50 pb-10 dark:bg-gray-900">
       {/* Profile Header */}
@@ -58,7 +61,7 @@ const DashboardHome = () => {
         <div className="flex items-center justify-center space-x-3">
           <div
             className="cursor-pointer rounded-full border bg-white p-1"
-            onClick={() => navigate('/dashboard/profile')}
+            onClick={() => navigate('/app/dashboard/profile')}
           >
             <img
               src="https://img.icons8.com/office/40/person-male.png"
@@ -66,9 +69,11 @@ const DashboardHome = () => {
               className="h-8 w-8"
             />
           </div>
-          <div>
+          <div className="flex flex-col items-start">
             <h1 className="text-sm">Welcome back,</h1>
-            <p className="text-2xl font-medium">John Doe</p>
+            <p className="text-2xl font-medium">
+              {isAuthenticated ? user?.username : 'User'}
+            </p>
           </div>
         </div>
         <div

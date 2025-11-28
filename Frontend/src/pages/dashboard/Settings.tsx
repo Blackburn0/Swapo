@@ -21,19 +21,19 @@ const account = [
     icon: User2,
     title: 'Profile',
     desc: 'Update your profile information',
-    url: '/dashboard/profile',
+    url: '/app/dashboard/profile',
   },
   {
     icon: LockKeyhole,
     title: 'Password',
     desc: 'Change your password',
-    url: '/dashboard/settings/update-password',
+    url: '/app/dashboard/settings/update-password',
   },
   {
     icon: CreditCard,
     title: 'Payment Methods',
     desc: 'Manage your payment methods',
-    url: '/dashboard/settings/payment',
+    url: '/app/dashboard/settings/payment',
   },
 ];
 
@@ -42,13 +42,13 @@ const privacy = [
     icon: Shield,
     title: 'Privacy Settings',
     desc: 'Manage your privacy settings',
-    url: '/dashboard/settings/privacy',
+    url: '/app/dashboard/settings/privacy',
   },
   {
     icon: Ban,
     title: 'Blocked Users',
     desc: 'Block or unblock users',
-    url: '/dashboard/settings/blocked',
+    url: '/app/dashboard/settings/blocked',
   },
 ];
 
@@ -57,13 +57,13 @@ const support = [
     icon: CircleQuestionMark,
     title: 'Help Center',
     desc: 'Get help with the app',
-    url: '/dashboard/settings/help',
+    url: '/app/dashboard/settings/help',
   },
   {
     icon: Mail,
     title: 'Contact',
     desc: 'Contact us for support',
-    url: '/dashboard/settings/contact',
+    url: '/app/dashboard/settings/contact',
   },
 ];
 
@@ -151,7 +151,7 @@ const Settings = () => {
               icon: Bell,
               title: 'Preferences',
               desc: 'Customize your notifications',
-              url: '/dashboard/settings/preferences',
+              url: '/app/dashboard/settings/preferences',
             },
           ])}
         </div>

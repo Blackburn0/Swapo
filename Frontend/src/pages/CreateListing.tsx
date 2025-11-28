@@ -1,21 +1,55 @@
-// src/pages/CreateListing.tsx
-import { useRef, useState } from "react";
-import Button from "@/components/ui/Button";
-import {
-  ArrowLeft,
-  Wrench,
-  Search,
-  ImagePlus,
-  Link as LinkIcon,
-} from "lucide-react";
+import { useRef, useState, useEffect } from 'react';
+import Button from '@/components/ui/Button';
+import { ArrowLeft, ImagePlus, Link as LinkIcon } from 'lucide-react';
+import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/context/AuthContext';
+
+interface ListingPayload {
+  skill_offered: string | number;
+  skill_desired: string | number;
+  custom_offer_skill?: string;
+  custom_desired_skill?: string;
+  title: string;
+  description: string;
+  status: string;
+  location_preference: string;
+}
+
+interface Skill {
+  skill_id: number;
+  skill_name: string;
+}
+
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const CreateListing = () => {
-  const [offerSkill, setOfferSkill] = useState("");
-  const [wantSkill, setWantSkill] = useState("");
-  const [description, setDescription] = useState("");
-  const [portfolio, setPortfolio] = useState("");
+  const { showToast } = useToast();
+  const { token } = useAuth();
+
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [offerSkill, setOfferSkill] = useState<string | number>('');
+  const [desiredSkill, setDesiredSkill] = useState<string | number>('');
+
+  const [customOfferSkill, setCustomOfferSkill] = useState('');
+  const [customDesiredSkill, setCustomDesiredSkill] = useState('');
+
+  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState('');
+  const [locationPreference, setLocationPreference] = useState('Remote');
+
+  const [portfolio, setPortfolio] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Fetch skills from backend
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/skills/`)
+      .then((res) => res.json())
+      .then((data) => setSkills(data))
+      .catch((err) => console.error('Failed to fetch skills:', err));
+  }, []);
 
   const onSelectFiles = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
@@ -37,34 +71,100 @@ const CreateListing = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (e?: React.FormEvent) => {
+  const onSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    // Example payload - replace with API call
-    const payload = {
-      offerSkill,
-      wantSkill,
+
+    if (!offerSkill || !desiredSkill || !description) {
+      showToast('Please fill in all required fields.', 'info');
+      return;
+    }
+
+    const payload: ListingPayload = {
+      skill_offered: offerSkill === 'other' ? 'other' : Number(offerSkill),
+      skill_desired: desiredSkill === 'other' ? 'other' : Number(desiredSkill),
+      title: description.slice(0, 50), // first 50 chars as title
       description,
-      portfolio,
-      files,
+      status: 'active',
+      location_preference: locationPreference,
     };
-    // For now just log
-    console.log("Create listing payload:", payload);
-    // TODO: show toast, navigate, or call backend
+
+    // If user selects "Other", send the custom skill as a separate field
+    if (offerSkill === 'other') {
+      payload.skill_offered = 'other';
+      payload.custom_offer_skill = customOfferSkill.trim();
+    } else {
+      payload.skill_offered = Number(offerSkill);
+    }
+
+    if (desiredSkill === 'other') {
+      payload.skill_desired = 'other';
+      payload.custom_desired_skill = customDesiredSkill.trim();
+    } else {
+      payload.skill_desired = Number(desiredSkill);
+    }
+
+    if (offerSkill === 'other' && !customOfferSkill.trim()) {
+      showToast('Please enter your custom offered skill.', 'info');
+      return;
+    }
+    if (desiredSkill === 'other' && !customDesiredSkill.trim()) {
+      showToast('Please enter your custom desired skill.', 'info');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/listings/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        showToast('Failed to create listing: ' + JSON.stringify(err), 'error');
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      showToast('Listing created successfully!', 'success');
+
+      console.log('Created listing:', data);
+
+      // Reset form
+      setOfferSkill('');
+      setDesiredSkill('');
+      setCustomOfferSkill('');
+      setCustomDesiredSkill('');
+      setDescription('');
+      setPortfolio('');
+      setFiles([]);
+    } catch (err) {
+      console.error(err);
+      showToast('Something went wrong.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="flex min-h-screen flex-col bg-white dark:bg-gray-800">
       {/* Top bar */}
-      <header className="sticky top-0 z-20 bg-white border-b border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
+      <header className="sticky top-0 z-20 border-b border-gray-100 bg-white dark:bg-gray-800">
+        <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4">
           <button
             aria-label="Back"
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => window.history.back()}
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-lg md:text-xl font-semibold text-gray-900">
+          <h1 className="text-lg font-semibold text-gray-900 md:text-xl dark:text-gray-100">
             New Skill Trade
           </h1>
         </div>
@@ -72,49 +172,85 @@ const CreateListing = () => {
 
       <form
         onSubmit={onSubmit}
-        className="flex-1 overflow-auto max-w-3xl mx-auto px-4 py-6 pb-32 md:pb-40"
+        className="mx-auto w-full flex-1 overflow-auto px-4 py-6 pb-32 md:pb-40"
       >
         {/* Skill you want to offer */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-100">
             Skill you want to offer
           </label>
-          <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
-            <div className="mr-3 text-gray-500">
-              <Wrench size={18} />
-            </div>
+          <select
+            value={offerSkill}
+            onChange={(e) => setOfferSkill(e.target.value)}
+            className="w-full rounded-xl border bg-gray-50 px-4 py-3 text-black dark:bg-gray-800 dark:text-white"
+          >
+            <option value="">Select skill</option>
+            {skills.map((skill) => (
+              <option key={skill.skill_id} value={skill.skill_id}>
+                {skill.skill_name}
+              </option>
+            ))}
+            <option value="other">Other</option>
+          </select>
+
+          {offerSkill === 'other' && (
             <input
               type="text"
-              value={offerSkill}
-              onChange={(e) => setOfferSkill(e.target.value)}
-              placeholder="e.g. Web Design"
-              className="flex-1 bg-transparent outline-none text-gray-800 placeholder:text-gray-400"
+              placeholder="Enter your custom skill"
+              value={customOfferSkill}
+              onChange={(e) => setCustomOfferSkill(e.target.value)}
+              className="mt-2 w-full rounded-xl border bg-gray-50 px-4 py-3 text-black dark:bg-gray-800 dark:text-white"
             />
-          </div>
+          )}
         </div>
 
         {/* Skill you're looking for */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-100">
             Skill you're looking for
           </label>
-          <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
-            <div className="mr-3 text-gray-500">
-              <Search size={18} />
-            </div>
+          <select
+            value={desiredSkill}
+            onChange={(e) => setDesiredSkill(e.target.value)}
+            className="w-full rounded-xl border bg-gray-50 px-4 py-3 text-black dark:bg-gray-800 dark:text-white"
+          >
+            <option value="">Select skill</option>
+            {skills.map((skill) => (
+              <option key={skill.skill_id} value={skill.skill_id}>
+                {skill.skill_name}
+              </option>
+            ))}
+            <option value="other">Other</option>
+          </select>
+
+          {desiredSkill === 'other' && (
             <input
               type="text"
-              value={wantSkill}
-              onChange={(e) => setWantSkill(e.target.value)}
-              placeholder="e.g. Content Writing"
-              className="flex-1 bg-transparent outline-none text-gray-800 placeholder:text-gray-400"
+              placeholder="Enter your custom desired skill"
+              value={customDesiredSkill}
+              onChange={(e) => setCustomDesiredSkill(e.target.value)}
+              className="mt-2 w-full rounded-xl border bg-gray-50 px-4 py-3 text-black dark:bg-gray-800 dark:text-white"
             />
-          </div>
+          )}
+        </div>
+
+        {/* Title */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-100">
+            Title
+          </label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g., Teach Python in Exchange for UI Design"
+            className="w-full rounded-xl border bg-gray-50 px-4 py-3 text-black dark:bg-gray-800 dark:text-white"
+          />
         </div>
 
         {/* Description */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-100">
             Describe your trade
           </label>
           <textarea
@@ -122,16 +258,31 @@ const CreateListing = () => {
             onChange={(e) => setDescription(e.target.value)}
             rows={6}
             placeholder="Tell us more about the skills you're offering and what you're looking for in return."
-            className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 placeholder:text-gray-400 resize-none focus:outline-none"
+            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 text-gray-800 placeholder:text-gray-400 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-50"
           />
+        </div>
+
+        {/* Location Preference */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-100">
+            Location Preference
+          </label>
+          <select
+            value={locationPreference}
+            onChange={(e) => setLocationPreference(e.target.value)}
+            className="w-full rounded-xl border bg-gray-50 px-4 py-3 text-black dark:bg-gray-800 dark:text-white"
+          >
+            <option value="Remote">Remote</option>
+            <option value="Onsite">Onsite</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
         </div>
 
         {/* Showcase upload */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-100">
             Showcase your work
           </label>
-
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
@@ -139,15 +290,15 @@ const CreateListing = () => {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") openFilePicker();
+              if (e.key === 'Enter' || e.key === ' ') openFilePicker();
             }}
-            className="w-full border-2 border-dashed border-gray-300 rounded-xl py-8 px-4 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 px-4 py-8 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            <div className="flex items-center gap-3 text-gray-600">
+            <div className="flex items-center gap-3 text-gray-600 dark:text-gray-100">
               <ImagePlus size={20} />
               <span className="font-medium">Add Examples or Portfolio</span>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="mt-2 text-xs text-gray-400 dark:text-gray-50">
               Click to upload or drag & drop (images, pdf, up to 6 files)
             </p>
             <input
@@ -160,40 +311,44 @@ const CreateListing = () => {
             />
           </div>
 
-          {/* File previews */}
           {files.length > 0 && (
             <div className="mt-4 grid grid-cols-3 gap-3">
               {files.map((f, idx) => (
                 <div
                   key={idx}
-                  className="relative rounded-md border border-gray-200 overflow-hidden bg-white"
+                  className="relative overflow-hidden rounded-md border border-gray-200 bg-white dark:bg-gray-800"
                 >
-                  {/* Show image preview where possible */}
-                  {f.type.startsWith("image/") ? (
+                  {f.type.startsWith('image/') ? (
                     <img
                       src={URL.createObjectURL(f)}
                       alt={f.name}
-                      className="w-full h-28 object-cover"
+                      className="h-28 w-full object-cover"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-28">
-                      <div className="text-sm text-gray-600 px-2">{f.name}</div>
+                    <div className="flex h-28 items-center justify-center">
+                      <div className="px-2 text-sm text-gray-600 dark:text-gray-100">
+                        {f.name}
+                      </div>
                     </div>
                   )}
-
                   <button
                     type="button"
                     onClick={() => removeFile(idx)}
-                    className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow"
+                    className="absolute -top-2 -right-2 rounded-full bg-white p-1 shadow dark:bg-gray-800"
                     aria-label={`Remove ${f.name}`}
                   >
                     <svg
-                      className="w-4 h-4 text-gray-600"
+                      className="h-4 w-4 text-gray-600 dark:text-gray-100"
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path
+                        d="M6 6L18 18M6 18L18 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -204,10 +359,10 @@ const CreateListing = () => {
 
         {/* Portfolio link */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-100">
             Or add a link to your portfolio
           </label>
-          <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
+          <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:bg-gray-600">
             <div className="mr-3 text-gray-500">
               <LinkIcon size={18} />
             </div>
@@ -216,20 +371,21 @@ const CreateListing = () => {
               value={portfolio}
               onChange={(e) => setPortfolio(e.target.value)}
               placeholder="https://yourportfolio.com"
-              className="flex-1 bg-transparent outline-none text-gray-800 placeholder:text-gray-400"
+              className="flex-1 bg-transparent text-gray-800 outline-none placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-50"
             />
           </div>
         </div>
       </form>
 
       {/* Sticky bottom CTA */}
-      <div className="fixed left-0 right-0 bottom-0 bg-white border-t border-gray-100 py-4 px-4 safe-bottom">
-        <div className="max-w-3xl mx-auto">
+      <div className="safe-bottom fixed right-0 bottom-12 left-0 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-600 dark:bg-gray-800">
+        <div className="mx-auto max-w-3xl">
           <Button
             onClick={() => onSubmit()}
-            className="bg-[#FF2E2E] w-full py-4 text-lg font-semibold rounded-full shadow-lg"
+            className="w-full rounded-full bg-[#FF2E2E] py-4 text-lg font-semibold shadow-lg"
+            disabled={loading}
           >
-            Create Listing
+            {loading ? 'Submitting...' : 'Create Listing'}
           </Button>
         </div>
       </div>
