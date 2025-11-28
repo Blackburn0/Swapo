@@ -1,36 +1,49 @@
-*.env
+# Python
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
 db.sqlite3
-venv
-accounts/__pycache__/
-accounts/migrations/
-
-listings/__pycache__/
-listings/migrations/
-
-messages/__pycache__/
-messages/migrations/
-
-notifications/__pycache__/
-notifications/migrations/
-
-reviews/__pycache__/
-reviews/migrations/
-
-services/__pycache__/
-services/migrations/
-
-skills/__pycache__/
-skills/migrations/
-
-trades/__pycache__/
-trades/migrations/
-
-userblocks/__pycache__/
-userblocks/migrations/
-
-userSkills/__pycache__/
-userSkills/migrations/
-
+db.sqlite3-journal
 media/
+staticfiles/
+
+# Environment
+*.env
+.env
+.env.local
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migrations (optional - uncomment if you want to ignore migrations)
+# */migrations/
+
+# Cache and compiled files
+*/__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local settings
+local_settings.py

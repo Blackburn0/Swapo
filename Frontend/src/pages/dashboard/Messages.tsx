@@ -4,13 +4,18 @@ import { useMessages } from '@/hooks/useMessages';
 import { useMessageList } from '@/hooks/useMessageList';
 import { useEnterKey } from '@/hooks/useEnterKey';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 const Messages = () => {
   const location = useLocation();
   const state = location.state as { userId?: number; username?: string };
+  const { user } = useAuth();
 
   const [selectedChatId, setSelectedChatId] = useState<number | null>(
     state?.userId || null,
+  );
+  const [selectedUsername, setSelectedUsername] = useState<string>(
+    state?.username || '',
   );
   const { data: chatList = [], isLoading: listLoading } = useMessageList();
   const {
@@ -49,24 +54,58 @@ const Messages = () => {
         {chatList.length === 0 && (
           <p className="p-4 text-gray-500">No messages yet</p>
         )}
-        {chatList.map((chat: any) => (
-          <div
-            key={chat.message_id}
-            className={`cursor-pointer border-b border-gray-100 p-4 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800 ${
-              selectedChatId === chat.message_id
-                ? 'bg-gray-100 dark:bg-gray-800'
-                : ''
-            }`}
-            onClick={() => setSelectedChatId(chat.message_id)}
-          >
-            <p className="text-left font-medium text-gray-900 dark:text-gray-100">
-              {chat.content}
-            </p>
-            <p className="mt-1 text-left text-xs text-gray-500">
-              {new Date(chat.timestamp).toLocaleString()}
-            </p>
-          </div>
-        ))}
+        {chatList.map((conversation: any) => {
+          const otherUser = conversation.other_user;
+          const lastMsg = conversation.last_message;
+          const displayName = 
+            otherUser.first_name && otherUser.last_name
+              ? `${otherUser.first_name} ${otherUser.last_name}`
+              : otherUser.username;
+          
+          return (
+            <div
+              key={otherUser.user_id}
+              className={`cursor-pointer border-b border-gray-100 p-4 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800 ${
+                selectedChatId === otherUser.user_id
+                  ? 'bg-gray-100 dark:bg-gray-800'
+                  : ''
+              }`}
+              onClick={() => {
+                setSelectedChatId(otherUser.user_id);
+                setSelectedUsername(displayName);
+              }}
+            >
+              <div className="flex items-center space-x-3">
+                <img
+                  src={
+                    otherUser.profile_picture_url ||
+                    'https://img.icons8.com/office/40/person-male.png'
+                  }
+                  alt={displayName}
+                  className="h-10 w-10 rounded-full"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-left font-medium text-gray-900 dark:text-gray-100">
+                      {displayName}
+                    </p>
+                    {conversation.unread_count > 0 && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white">
+                        {conversation.unread_count}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 truncate text-left text-xs text-gray-500 dark:text-gray-400">
+                    {lastMsg.content}
+                  </p>
+                  <p className="mt-1 text-left text-xs text-gray-400">
+                    {new Date(lastMsg.timestamp).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Right: Chat Details */}
@@ -88,7 +127,7 @@ const Messages = () => {
               />
               <div className="text-center">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  Chat #{selectedChatId}
+                  {selectedUsername || `User #${selectedChatId}`}
                 </h1>
                 <p className="text-sm font-semibold text-green-400">Online</p>
               </div>
@@ -99,55 +138,71 @@ const Messages = () => {
             </div>
 
             {/* Messages */}
-            <div className="hide-scrollbar-vertical flex flex-col space-y-2 overflow-y-auto px-2 py-3">
-              {messages.map((msg: any, idx: number) => (
-                <div key={idx} className="flex flex-col space-y-1">
-                  <div
-                    className={`flex items-end ${
-                      msg.is_sender ? 'justify-end' : 'justify-start'
-                    } space-x-2`}
-                  >
-                    {!msg.is_sender && (
-                      <img
-                        src={
-                          msg.sender_avatar ||
-                          'https://img.icons8.com/office/40/person-male.png'
-                        }
-                        alt={msg.sender_name}
-                        className="h-8 w-8 rounded-full"
-                      />
-                    )}
+            <div className="hide-scrollbar-vertical flex flex-col space-y-3 overflow-y-auto px-4 py-4">
+              {messages.map((msg: any, idx: number) => {
+                // Determine if current user is the sender by comparing with logged-in user's ID
+                // Handle both user_id and id properties, and convert to string for comparison
+                const currentUserId = String(user?.user_id || user?.id || '');
+                const messageSenderId = String(msg.sender_details?.user_id || '');
+                const isSender = currentUserId === messageSenderId && currentUserId !== '';
+                
+                // Debug logging (remove after fixing)
+                console.log('Current User ID:', currentUserId);
+                console.log('Message Sender ID:', messageSenderId);
+                console.log('Is Sender:', isSender);
+                
+                const senderDetails = msg.sender_details;
+                const receiverDetails = msg.receiver_details;
+                
+                return (
+                  <div key={idx} className="flex flex-col space-y-1">
                     <div
-                      className={`max-w-[70%] p-3 text-sm ${
-                        msg.is_sender
-                          ? 'rounded-tl-lg rounded-tr-lg rounded-br-none rounded-bl-lg bg-red-500 text-right text-white dark:bg-red-500'
-                          : 'rounded-lg rounded-br-lg rounded-bl-none bg-gray-200 text-left text-gray-900 dark:bg-gray-700 dark:text-gray-100'
+                      className={`flex items-end ${
+                        isSender ? 'justify-end' : 'justify-start'
+                      } space-x-2`}
+                    >
+                      {!isSender && (
+                        <img
+                          src={
+                            senderDetails?.profile_picture_url ||
+                            'https://img.icons8.com/office/40/person-male.png'
+                          }
+                          alt={senderDetails?.username || 'User'}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      )}
+                      <div
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm ${
+                          isSender
+                            ? 'rounded-br-sm bg-red-500 text-white dark:bg-red-600'
+                            : 'rounded-bl-sm bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                      {isSender && (
+                        <img
+                          src={
+                            senderDetails?.profile_picture_url ||
+                            'https://img.icons8.com/office/40/person-female.png'
+                          }
+                          alt="You"
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div
+                      className={`text-xs ${
+                        isSender
+                          ? 'mr-10 text-right text-gray-400 dark:text-gray-500'
+                          : 'ml-10 text-left text-gray-500 dark:text-gray-400'
                       }`}
                     >
-                      {msg.content || msg.text}
+                      {new Date(msg.timestamp).toLocaleString()}
                     </div>
-                    {msg.is_sender && (
-                      <img
-                        src={
-                          msg.sender_avatar ||
-                          'https://img.icons8.com/office/40/person-female.png'
-                        }
-                        alt="You"
-                        className="h-8 w-8 rounded-full"
-                      />
-                    )}
                   </div>
-                  <div
-                    className={`text-xs ${
-                      msg.is_sender
-                        ? 'mr-10 text-right text-gray-400'
-                        : 'ml-10 text-left text-gray-500 dark:text-gray-400'
-                    }`}
-                  >
-                    {new Date(msg.timestamp).toLocaleString()}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef}></div>
             </div>
 

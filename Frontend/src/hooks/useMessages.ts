@@ -16,12 +16,15 @@ export const useMessages = (userId?: string | number | null) => {
 
   const sendMessage = useMutation({
     mutationFn: async (payload: { content: string; receiver: number }) => {
-      const res = await axiosInstance.post('messages/', payload);
+      const res = await axiosInstance.post('/messages/', payload);
       return res.data;
     },
     onSuccess: () => {
-      if (userId)
+      // Invalidate both the specific conversation and the conversations list
+      if (userId) {
         queryClient.invalidateQueries({ queryKey: ['messages', userId] });
+      }
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 

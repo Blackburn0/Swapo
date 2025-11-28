@@ -1,16 +1,12 @@
 import Button from '@/components/ui/Button';
 import {
   ChevronLeft,
-  Code,
-  Film,
-  Mic,
-  PencilRuler,
   Settings,
   Star,
   StarHalf,
   ThumbsDown,
   ThumbsUp,
-  Video,
+  Sparkles,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -19,17 +15,12 @@ import { useAuth } from '@/context/AuthContext';
 
 const nav = ['All', 'Offered Skills', 'Desired Skills', 'Portfolio'];
 
-const skillsData = {
-  'Offered Skills': [
-    { icon: PencilRuler, title: 'UX Design' },
-    { icon: Code, title: 'Web Development' },
-    { icon: Video, title: 'Photography' },
-  ],
-  'Desired Skills': [
-    { icon: Mic, title: 'Public Speaking' },
-    { icon: Film, title: 'Video Editing' },
-  ],
-};
+interface UserSkill {
+  user_skill_id: number;
+  skill_name: string;
+  proficiency_level?: string;
+  details?: string;
+}
 
 const portfolioData = [
   { url: '', image: '' },
@@ -107,12 +98,14 @@ const Profile = () => {
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
+  const [offeredSkills, setOfferedSkills] = useState<UserSkill[]>([]);
+  const [desiredSkills, setDesiredSkills] = useState<UserSkill[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await axios.get('/auth/me');
-
         setProfile(res.data.user);
       } catch (err) {
         console.error('Failed to load user profile:', err);
@@ -123,6 +116,24 @@ const Profile = () => {
 
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    const fetchUserSkills = async () => {
+      if (!user?.user_id) return;
+      
+      try {
+        const res = await axios.get(`/user-skills/${user.user_id}/`);
+        setOfferedSkills(res.data.offerings || []);
+        setDesiredSkills(res.data.desires || []);
+      } catch (err) {
+        console.error('Failed to load user skills:', err);
+      } finally {
+        setSkillsLoading(false);
+      }
+    };
+
+    fetchUserSkills();
+  }, [user]);
 
   if (loading || !profile) {
     return <p className="p-10 text-center">Loading profile...</p>;
@@ -206,22 +217,35 @@ const Profile = () => {
             <h2 className="mt-3 mb-6 text-left text-xl font-bold text-gray-900 dark:text-gray-100">
               Offered Skills
             </h2>
-            <div className="flex flex-wrap gap-3">
-              {skillsData['Offered Skills'].map((skill, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-4 rounded-lg border border-gray-400 p-8 pt-5 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-800"
-                >
-                  <skill.icon
-                    size={20}
-                    className="text-red-600 dark:text-red-500"
-                  />
-                  <div className="text-base font-bold text-gray-700 dark:text-gray-100">
-                    {skill.title}
+            {skillsLoading ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading skills...</p>
+            ) : offeredSkills.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {offeredSkills.map((skill) => (
+                  <div
+                    key={skill.user_skill_id}
+                    className="flex items-center gap-3 rounded-lg border border-gray-400 px-4 py-3 shadow-sm dark:border-gray-600 dark:bg-gray-800"
+                  >
+                    <Sparkles
+                      size={18}
+                      className="text-red-600 dark:text-red-500"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-gray-700 dark:text-gray-100">
+                        {skill.skill_name}
+                      </span>
+                      {skill.proficiency_level && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {skill.proficiency_level}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No skills offered yet</p>
+            )}
           </div>
         )}
 
@@ -230,22 +254,35 @@ const Profile = () => {
             <h2 className="mt-3 mb-6 text-left text-xl font-bold text-gray-900 dark:text-gray-100">
               Desired Skills
             </h2>
-            <div className="flex flex-wrap gap-3">
-              {skillsData['Desired Skills'].map((skill, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-4 rounded-lg border border-gray-400 p-8 pt-5 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-800"
-                >
-                  <skill.icon
-                    size={20}
-                    className="text-red-600 dark:text-red-500"
-                  />
-                  <div className="text-base font-bold text-gray-700 dark:text-gray-100">
-                    {skill.title}
+            {skillsLoading ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading skills...</p>
+            ) : desiredSkills.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {desiredSkills.map((skill) => (
+                  <div
+                    key={skill.user_skill_id}
+                    className="flex items-center gap-3 rounded-lg border border-gray-400 px-4 py-3 shadow-sm dark:border-gray-600 dark:bg-gray-800"
+                  >
+                    <Sparkles
+                      size={18}
+                      className="text-red-600 dark:text-red-500"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-gray-700 dark:text-gray-100">
+                        {skill.skill_name}
+                      </span>
+                      {skill.proficiency_level && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {skill.proficiency_level}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No skills desired yet</p>
+            )}
           </div>
         )}
 

@@ -4,9 +4,9 @@ import axiosInstance from '@/utils/axiosInstance';
 
 export const useMessageList = () => {
   return useQuery({
-    queryKey: ['messageList'],
+    queryKey: ['conversations'],
     queryFn: async () => {
-      const res = await axiosInstance.get('messages/');
+      const res = await axiosInstance.get('messages/conversations/');
       return res.data;
     },
   });

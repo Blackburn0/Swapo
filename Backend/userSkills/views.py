@@ -18,7 +18,7 @@ class PublicUserSkillsView(APIView):
 
   def get(self, request, user_id):
     try:
-      user = User.objects.get(id=user_id)
+      user = User.objects.get(user_id=user_id)
     except User.DoesNotExist:
       return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -27,14 +27,14 @@ class PublicUserSkillsView(APIView):
     desires = skills.filter(skill_type='desiring')
 
     return Response({
-      "user_id": user.id,
+      "user_id": user.user_id,
       "offerings": UserSkillSerializer(offerings, many=True).data,
       "desires": UserSkillSerializer(desires, many=True).data
     })
     
 
 class UserSkillSerializer(serializers.ModelSerializer):
-  user_id = serializers.IntegerField(source='user.id', read_only=True)
+  user_id = serializers.IntegerField(source='user.user_id', read_only=True)
   skill_name = serializers.CharField(source='skill.skill_name', read_only=True)
 
   class Meta:
