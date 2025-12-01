@@ -13,6 +13,7 @@ interface ListingPayload {
   description: string;
   status: string;
   location_preference: string;
+  portfolio_images?: string[];
 }
 
 interface Skill {
@@ -53,8 +54,18 @@ const CreateListing = () => {
 
   const onSelectFiles = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
-    const arr = Array.from(selectedFiles).slice(0, 6); // limit examples
-    setFiles((prev) => [...prev, ...arr]);
+
+    // Convert to array
+    const arr = Array.from(selectedFiles);
+
+    // Calculate how many more files can be added
+    const availableSlots = 6 - files.length;
+    if (availableSlots <= 0) return;
+
+    // Take only files that fit in remaining slots
+    const filesToAdd = arr.slice(0, availableSlots);
+
+    setFiles((prev) => [...prev, ...filesToAdd]);
   };
 
   const removeFile = (idx: number) => {
@@ -79,49 +90,42 @@ const CreateListing = () => {
       return;
     }
 
-    const payload: ListingPayload = {
-      skill_offered: offerSkill === 'other' ? 'other' : Number(offerSkill),
-      skill_desired: desiredSkill === 'other' ? 'other' : Number(desiredSkill),
-      title: description.slice(0, 50), // first 50 chars as title
-      description,
-      status: 'active',
-      location_preference: locationPreference,
-    };
-
-    // If user selects "Other", send the custom skill as a separate field
-    if (offerSkill === 'other') {
-      payload.skill_offered = 'other';
-      payload.custom_offer_skill = customOfferSkill.trim();
-    } else {
-      payload.skill_offered = Number(offerSkill);
-    }
-
-    if (desiredSkill === 'other') {
-      payload.skill_desired = 'other';
-      payload.custom_desired_skill = customDesiredSkill.trim();
-    } else {
-      payload.skill_desired = Number(desiredSkill);
-    }
-
-    if (offerSkill === 'other' && !customOfferSkill.trim()) {
-      showToast('Please enter your custom offered skill.', 'info');
-      return;
-    }
-    if (desiredSkill === 'other' && !customDesiredSkill.trim()) {
-      showToast('Please enter your custom desired skill.', 'info');
-      return;
-    }
-
     setLoading(true);
 
     try {
+      // Create FormData instead of JSON
+      const formData = new FormData();
+      formData.append('title', title || description.slice(0, 50));
+      formData.append('description', description);
+      formData.append('status', 'active');
+      formData.append('location_preference', locationPreference);
+
+      // Skills
+      if (offerSkill === 'other') {
+        formData.append('skill_offered', 'other');
+        formData.append('custom_offer_skill', customOfferSkill.trim());
+      } else {
+        formData.append('skill_offered', String(offerSkill));
+      }
+
+      if (desiredSkill === 'other') {
+        formData.append('skill_desired', 'other');
+        formData.append('custom_desired_skill', customDesiredSkill.trim());
+      } else {
+        formData.append('skill_desired', String(desiredSkill));
+      }
+
+      // Portfolio images (limit 5)
+      files.slice(0, 5).forEach((file) => {
+        formData.append('portfolio_images', file);
+      });
+
       const res = await fetch(`${API_BASE_URL}/listings/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -133,7 +137,6 @@ const CreateListing = () => {
 
       const data = await res.json();
       showToast('Listing created successfully!', 'success');
-
       console.log('Created listing:', data);
 
       // Reset form
@@ -141,6 +144,7 @@ const CreateListing = () => {
       setDesiredSkill('');
       setCustomOfferSkill('');
       setCustomDesiredSkill('');
+      setTitle('');
       setDescription('');
       setPortfolio('');
       setFiles([]);
@@ -284,19 +288,31 @@ const CreateListing = () => {
             Showcase your work
           </label>
           <div
-            onDrop={handleDrop}
+            onDrop={(e) => {
+              if (files.length >= 6) return; // prevent drop if 6 files already
+              handleDrop(e);
+            }}
             onDragOver={(e) => e.preventDefault()}
-            onClick={openFilePicker}
+            onClick={() => {
+              if (files.length >= 6) return; // prevent opening file picker
+              openFilePicker();
+            }}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
+              if (files.length >= 6) return;
               if (e.key === 'Enter' || e.key === ' ') openFilePicker();
             }}
-            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 px-4 py-8 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className={`flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 px-4 py-8 hover:bg-gray-50 dark:hover:bg-gray-700 ${files.length >= 6 ? 'cursor-not-allowed opacity-50' : ''}`}
           >
             <div className="flex items-center gap-3 text-gray-600 dark:text-gray-100">
               <ImagePlus size={20} />
-              <span className="font-medium">Add Examples or Portfolio</span>
+              <span className="font-medium">
+                {' '}
+                {files.length >= 6
+                  ? 'Maximum 6 files reached'
+                  : 'Add Examples or Portfolio'}
+              </span>
             </div>
             <p className="mt-2 text-xs text-gray-400 dark:text-gray-50">
               Click to upload or drag & drop (images, pdf, up to 6 files)
@@ -308,6 +324,7 @@ const CreateListing = () => {
               className="hidden"
               accept="image/*,.pdf"
               multiple
+              disabled={files.length >= 6}
             />
           </div>
 

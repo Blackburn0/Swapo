@@ -47,7 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=100, blank=True, null=True)
     role = models.CharField(max_length=150, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    profile_picture_url = models.ImageField(blank=True, null=True)
+    profile_picture_url = models.URLField(blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     registration_date = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(blank=True, null=True)
@@ -58,7 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     
-    # ✅ Add this field for OAuth users
+    # Add this field for OAuth users
     is_profile_complete = models.BooleanField(default=False)
 
     @property

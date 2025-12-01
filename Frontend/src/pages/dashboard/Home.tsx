@@ -80,13 +80,16 @@ const DashboardHome = () => {
       <div className="flex items-center justify-between bg-red-500 px-4 pt-10 pb-26 text-white">
         <div className="flex items-center justify-center space-x-3">
           <div
-            className="cursor-pointer rounded-full border bg-white p-1"
+            className="cursor-pointer rounded-full border bg-white"
             onClick={() => navigate('/app/dashboard/profile')}
           >
             <img
-              src="https://img.icons8.com/office/40/person-male.png"
+              src={
+                profile?.profile_picture_url ||
+                'https://img.icons8.com/office/40/person-female.png'
+              }
               alt="User Profile Photo"
-              className="h-8 w-8"
+              className="h-8 w-8 rounded-full"
             />
           </div>
           <div className="flex flex-col items-start">

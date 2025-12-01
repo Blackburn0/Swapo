@@ -25,6 +25,7 @@ interface Listing {
     last_name: string;
     username: string;
     user_id: number;
+    profile_picture_url: string;
   };
 }
 
@@ -110,7 +111,9 @@ const ListingPage = () => {
     role: l.title || 'No Title',
     offering: l.skill_offered_name,
     seeking: l.skill_desired_name,
-    image: 'https://img.icons8.com/office/40/person-female.png',
+    image:
+      l?.user?.profile_picture_url ||
+      'https://img.icons8.com/office/40/person-female.png',
   }));
 
   // Filtered results

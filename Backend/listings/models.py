@@ -21,7 +21,19 @@ class SkillListing(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     location_preference = models.CharField(max_length=200, blank=True, null=True)
+    portfolio_link = models.URLField( max_length=500, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.title} ({self.status})"
+      return f"{self.title} ({self.status})"
     
+class PortfolioImage(models.Model):
+  listing = models.ForeignKey(
+    SkillListing,
+    on_delete=models.CASCADE,
+    related_name='portfolio_images'
+  )
+  image_url = models.URLField()
+  uploaded_at = models.DateTimeField(auto_now_add=True)
+
+  def __str__(self):
+    return f"Portfolio image for {self.listing.title}"

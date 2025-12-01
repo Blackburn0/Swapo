@@ -120,7 +120,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserSkills = async () => {
       if (!user?.user_id) return;
-      
+
       try {
         const res = await axios.get(`/user-skills/${user.user_id}/`);
         setOfferedSkills(res.data.offerings || []);
@@ -138,6 +138,8 @@ const Profile = () => {
   if (loading || !profile) {
     return <p className="p-10 text-center">Loading profile...</p>;
   }
+
+  console.log('PROFILE:', profile);
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col bg-stone-50/50 py-2 pb-10 dark:bg-gray-900">
@@ -164,7 +166,10 @@ const Profile = () => {
       <div className="rounded-b-lg bg-stone-50/50 px-4 pt-10 text-center dark:bg-gray-800">
         <div className="mx-auto h-36 w-36 overflow-hidden rounded-full bg-stone-200 dark:bg-gray-700">
           <img
-            src="https://img.icons8.com/office/40/person-female.png"
+            src={
+              profile?.profile_picture_url ||
+              'https://img.icons8.com/office/40/person-female.png'
+            }
             alt="Profile Photo"
             className="h-full w-full object-cover"
           />
@@ -218,7 +223,9 @@ const Profile = () => {
               Offered Skills
             </h2>
             {skillsLoading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Loading skills...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Loading skills...
+              </p>
             ) : offeredSkills.length > 0 ? (
               <div className="flex flex-wrap gap-3">
                 {offeredSkills.map((skill) => (
@@ -244,7 +251,9 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No skills offered yet</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No skills offered yet
+              </p>
             )}
           </div>
         )}
@@ -255,7 +264,9 @@ const Profile = () => {
               Desired Skills
             </h2>
             {skillsLoading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Loading skills...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Loading skills...
+              </p>
             ) : desiredSkills.length > 0 ? (
               <div className="flex flex-wrap gap-3">
                 {desiredSkills.map((skill) => (
@@ -281,7 +292,9 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No skills desired yet</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No skills desired yet
+              </p>
             )}
           </div>
         )}

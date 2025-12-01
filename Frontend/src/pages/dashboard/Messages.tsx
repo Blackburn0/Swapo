@@ -5,6 +5,7 @@ import { useMessageList } from '@/hooks/useMessageList';
 import { useEnterKey } from '@/hooks/useEnterKey';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import OtherUserProfile from './OtherUserProfile';
 
 const Messages = () => {
   const location = useLocation();
@@ -57,11 +58,11 @@ const Messages = () => {
         {chatList.map((conversation: any) => {
           const otherUser = conversation.other_user;
           const lastMsg = conversation.last_message;
-          const displayName = 
+          const displayName =
             otherUser.first_name && otherUser.last_name
               ? `${otherUser.first_name} ${otherUser.last_name}`
               : otherUser.username;
-          
+
           return (
             <div
               key={otherUser.user_id}
@@ -143,17 +144,23 @@ const Messages = () => {
                 // Determine if current user is the sender by comparing with logged-in user's ID
                 // Handle both user_id and id properties, and convert to string for comparison
                 const currentUserId = String(user?.user_id || user?.id || '');
-                const messageSenderId = String(msg.sender_details?.user_id || '');
-                const isSender = currentUserId === messageSenderId && currentUserId !== '';
-                
-                // Debug logging (remove after fixing)
-                console.log('Current User ID:', currentUserId);
-                console.log('Message Sender ID:', messageSenderId);
-                console.log('Is Sender:', isSender);
-                
+                const messageSenderId = String(
+                  msg.sender_details?.user_id || '',
+                );
+                const isSender =
+                  currentUserId === messageSenderId && currentUserId !== '';
+
+                // Debug logging
+                // console.log('Current User ID:', currentUserId);
+                // console.log('Message Sender ID:', messageSenderId);
+                // console.log('Is Sender:', isSender);
+
                 const senderDetails = msg.sender_details;
                 const receiverDetails = msg.receiver_details;
-                
+
+                // console.log('Message Sender :', senderDetails);
+                // console.log('Receiver:', receiverDetails);
+
                 return (
                   <div key={idx} className="flex flex-col space-y-1">
                     <div
@@ -164,10 +171,10 @@ const Messages = () => {
                       {!isSender && (
                         <img
                           src={
-                            senderDetails?.profile_picture_url ||
+                            receiverDetails?.profile_picture_url ||
                             'https://img.icons8.com/office/40/person-male.png'
                           }
-                          alt={senderDetails?.username || 'User'}
+                          alt={receiverDetails?.username || 'User'}
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       )}

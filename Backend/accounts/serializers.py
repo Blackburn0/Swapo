@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from .models import User
 from rest_framework import serializers
 from django.contrib.auth import password_validation
+from cloudinary.uploader import upload as cloudinary_upload
 
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -141,6 +142,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         return data
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
+    profile_picture_url = serializers.ImageField(required=False)
+
     class Meta:
         model = User
         fields = [
@@ -154,10 +157,16 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "is_profile_complete",
         ]
         extra_kwargs = {
-            "is_profile_complete": {"read_only": True},  # Optional: system controlled
+            "is_profile_complete": {"read_only": True},  
         }
 
     def update(self, instance, validated_data):
+        image = validated_data.pop("profile_picture_url", None)
+
+        if image:
+            upload_result = cloudinary_upload(image)
+            instance.profile_picture_url = upload_result.get("secure_url")
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         # Automatically mark profile as complete if key fields are filled

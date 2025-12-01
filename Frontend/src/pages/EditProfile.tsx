@@ -75,6 +75,7 @@ const EditProfile = () => {
       formData.append('role', role);
       formData.append('bio', bio);
       formData.append('location', location);
+
       if (avatarFile) formData.append('profile_picture_url', avatarFile);
 
       await axios.patch('/auth/me/update/', formData, {
@@ -85,7 +86,7 @@ const EditProfile = () => {
       });
 
       showToast('Profile updated successfully ✅', 'success');
-      navigate('/app/profile');
+      navigate('/app/dashboard/profile');
     } catch (error: any) {
       console.error('Profile update error:', error.response || error);
       showToast('Failed to update profile ❌', 'error');

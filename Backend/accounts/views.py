@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from urllib.parse import urlencode
+from rest_framework.parsers import MultiPartParser, FormParser
 import logging
 from django.contrib.auth import authenticate
 
@@ -104,6 +105,7 @@ def get_user_info(request):
             'role': user.role,
             'location': user.location,
             'bio': user.bio,
+            'profile_picture_url': user.profile_picture_url,
             'is_profile_complete': getattr(user, 'is_profile_complete', True),
         }
     })
@@ -277,6 +279,7 @@ class UpdateProfileView(generics.UpdateAPIView):
     """
     serializer_class = UpdateProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_object(self):
         return self.request.user  # Only update your own profile
