@@ -116,7 +116,8 @@ export default function ProposalDetails() {
 
   const isRecipient = currentUserId === proposal.recipient;
   const canAcceptOrReject = isRecipient && proposal.status === 'pending';
-
+  // console.log('proposal', proposal);
+  // console.log('recipient', isRecipient);
   return (
     <div className="mx-auto mb-12 max-w-xl p-5">
       {/* Header with back button */}
@@ -231,8 +232,9 @@ export default function ProposalDetails() {
         <div className="mt-5 flex gap-3">
           <Button
             onClick={handleReject}
+            variant="outline"
             disabled={processing}
-            className="flex-1 bg-gray-500 text-white hover:bg-gray-600"
+            className="flex-1"
           >
             {processing ? 'Processing...' : 'Reject'}
           </Button>

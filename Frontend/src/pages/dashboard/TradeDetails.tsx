@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from '@/utils/axiosInstance';
 import { useToast } from '@/hooks/useToast';
+import { getStatusColor, getStatusDotColor } from '@/utils/statusColour';
 
 interface TradeDetail {
   trade_id: number;
@@ -121,17 +122,14 @@ const TradeDetails = () => {
               Trade Status
             </span>
             <span
-              className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                trade.status === 'active'
-                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
-                  : trade.status === 'in_progress'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                    : trade.status === 'completed'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-              }`}
+              className={`mt-1 inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs font-semibold ${getStatusColor(
+                trade.status,
+              )}`}
             >
-              {trade.status.toUpperCase()}
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${getStatusDotColor(trade.status)}`}
+              ></div>
+              {trade.status}
             </span>
           </div>
         </div>
@@ -194,7 +192,7 @@ const TradeDetails = () => {
                 'https://img.icons8.com/office/40/person-male.png'
               }
               alt={otherUserName}
-              className="h-16 w-16 rounded-full object-cover"
+              className="h-12 w-12 rounded-full object-cover"
             />
             <div className="text-left">
               <p className="font-bold text-gray-900 dark:text-gray-100">

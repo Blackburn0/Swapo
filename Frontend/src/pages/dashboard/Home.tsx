@@ -12,6 +12,7 @@ import { useTrades } from '@/hooks/useTrades';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import axios from '@/utils/axiosInstance';
+import { getStatusColor, getStatusDotColor } from '@/utils/statusColour';
 
 const quickLinksData = [
   {
@@ -80,7 +81,7 @@ const DashboardHome = () => {
       <div className="flex items-center justify-between bg-red-500 px-4 pt-10 pb-26 text-white">
         <div className="flex items-center justify-center space-x-3">
           <div
-            className="cursor-pointer rounded-full border bg-white"
+            className="cursor-pointer rounded-full border-transparent bg-white"
             onClick={() => navigate('/app/dashboard/profile')}
           >
             <img
@@ -89,7 +90,7 @@ const DashboardHome = () => {
                 'https://img.icons8.com/office/40/person-female.png'
               }
               alt="User Profile Photo"
-              className="h-8 w-8 rounded-full"
+              className="h-10 w-10 rounded-full border-transparent"
             />
           </div>
           <div className="flex flex-col items-start">
@@ -141,7 +142,11 @@ const DashboardHome = () => {
             {recentTrades.map((trade: any, idx: number) => {
               // Determine the other user in the trade
               const isUser1 = trade.user1 === profile?.user_id;
+              const otherUser = trade.user1_details || trade.user2_details;
               const otherUserId = isUser1 ? trade.user2 : trade.user1;
+              const profilePic =
+                otherUser?.profile_picture_url ||
+                'https://img.icons8.com/office/40/person-male.png';
 
               return (
                 <div
@@ -150,24 +155,37 @@ const DashboardHome = () => {
                 >
                   <div className="mb-4 flex items-center space-x-3 text-left">
                     <div
-                      className="cursor-pointer rounded-full border-transparent bg-stone-200 p-1 dark:bg-gray-600"
+                      className="cursor-pointer rounded-full border-transparent bg-stone-200 dark:bg-gray-600"
                       onClick={() =>
                         navigate(`/app/dashboard/profile/${otherUserId}`)
                       }
                     >
                       <img
-                        src="https://img.icons8.com/office/40/person-male.png"
+                        src={profilePic}
                         alt="User Profile"
-                        className="h-8 w-8"
+                        className="h-10 w-10 rounded-full border-transparent"
                       />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                        Trade #{trade.trade_id}
+                        {trade.proposal_details?.proposer_details?.first_name
+                          ? `Trade with ${trade.proposal_details?.proposer_details?.first_name} ${trade.proposal_details?.proposer_details?.last_name}`
+                          : `Trade with ${trade.proposal_details?.proposer_details?.username}`}
                       </h3>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Status: {trade.status}
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {trade.skill1_details?.skill_name || 'Skill'} ↔{' '}
+                        {trade.skill2_details?.skill_name || 'Skill'}
                       </p>
+                      <span
+                        className={`mt-1 inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs font-semibold ${getStatusColor(
+                          trade.status,
+                        )}`}
+                      >
+                        <div
+                          className={`h-1.5 w-1.5 rounded-full ${getStatusDotColor(trade.status)}`}
+                        ></div>
+                        {trade.status}
+                      </span>
                     </div>
                   </div>
                   <div
