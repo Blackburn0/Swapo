@@ -2,6 +2,8 @@
 
 @variant dark (.dark &);
 
+@import 'tailwindcss';
+
 @keyframes slide-in {
   from {
     opacity: 0;

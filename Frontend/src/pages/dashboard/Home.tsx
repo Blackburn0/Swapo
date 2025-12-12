@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import axios from '@/utils/axiosInstance';
 import { getStatusColor, getStatusDotColor } from '@/utils/statusColour';
+import { useMessageList } from '@/hooks/useMessageList';
 
 const quickLinksData = [
   {
@@ -41,6 +42,7 @@ const DashboardHome = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { data: trades, isLoading } = useTrades();
+  const { data: chatList = [] } = useMessageList();
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
@@ -64,7 +66,6 @@ const DashboardHome = () => {
   if (loading || !profile) {
     return <p className="p-10 text-center">Please login</p>;
   }
-  console.log('trades', trades);
 
   // Get the 2 most recent trades for the current user
   const recentTrades =
@@ -77,6 +78,14 @@ const DashboardHome = () => {
 
   const capitalize = (str?: string) =>
     str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+
+  // Function to check if there are unread messages for a specific user
+  const hasUnreadMessagesForUser = (userId: number) => {
+    const conversation = chatList.find(
+      (chat: any) => chat.other_user.user_id === userId,
+    );
+    return conversation?.unread_count > 0;
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 pb-10 dark:bg-gray-900">
@@ -144,21 +153,22 @@ const DashboardHome = () => {
           <div>
             {recentTrades.map((trade: any, idx: number) => {
               // Determine the other user in the trade
-              // console.log('trade', trade);
               const otherUser = trade.user1_details || trade.user2_details;
               const otherUserId = otherUser?.user_id;
-              // console.log('other user', otherUserId);
-              //http://localhost:5173/app/dashboard/profile/8
-              //http://localhost:5173/app/dashboard/profile/57
+              const hasUnread = hasUnreadMessagesForUser(otherUserId);
 
               const profilePic =
                 otherUser?.profile_picture_url ||
                 'https://img.icons8.com/office/40/person-male.png';
 
+              const displayName = otherUser?.first_name
+                ? `${otherUser?.first_name} ${otherUser?.last_name}`
+                : capitalize(otherUser?.username);
+
               return (
                 <div
                   className="flex items-center justify-between"
-                  key={trade.trade_id}
+                  key={trade.trade_id || idx}
                 >
                   <div className="mb-4 flex items-center space-x-3 text-left">
                     <div
@@ -173,12 +183,14 @@ const DashboardHome = () => {
                         className="h-10 w-10 rounded-full border-transparent"
                       />
                     </div>
-                    <div>
-                      <h3 className="= font-semibold text-gray-900 dark:text-gray-100">
-                        Trade with{' '}
-                        {otherUser?.first_name
-                          ? `${otherUser?.first_name} ${otherUser?.last_name}`
-                          : `${capitalize(otherUser?.username)}`}
+                    <div
+                      onClick={() =>
+                        navigate(`/app/dashboard/trade/${trade.trade_id}`)
+                      }
+                      className="cursor-pointer"
+                    >
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                        Trade with {displayName}
                       </h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {trade.skill1_details?.skill_name || 'Skill'} ↔{' '}
@@ -197,15 +209,16 @@ const DashboardHome = () => {
                     </div>
                   </div>
                   <div
-                    className={`cursor-pointer ${idx === 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}
+                    className={`relative cursor-pointer dark:text-gray-300 ${hasUnread ? 'text-red-800/90' : 'text-gray-700'}`}
                     onClick={() =>
-                      navigate(`/app/dashboard/trade/${trade.trade_id}`)
+                      navigate('/app/dashboard/messages', {
+                        state: { userId: otherUserId, username: displayName },
+                      })
                     }
                   >
-                    {idx === 0 ? (
-                      <MessageSquareDot size={20} />
-                    ) : (
-                      <MessageSquare size={20} />
+                    <MessageSquare size={20} />
+                    {hasUnread && (
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full border-2 border-red-800/90 bg-white"></span>
                     )}
                   </div>
                 </div>
@@ -230,7 +243,7 @@ const DashboardHome = () => {
               <div className="mb-2 rounded-full border-transparent bg-red-200/30 p-4 text-red-700 dark:bg-red-100/20 dark:text-red-500">
                 <link.icon size={18} />
               </div>
-              <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              <div className="text-base font-semibold text-gray-700 dark:text-gray-300">
                 {link.title}
               </div>
             </div>

@@ -6,8 +6,16 @@ import {
   User2,
 } from 'lucide-react';
 import { Outlet, NavLink } from 'react-router-dom';
+import { useMessageList } from '@/hooks/useMessageList';
 
 const DashboardLayout = () => {
+  const { data: chatList = [] } = useMessageList();
+
+  // Check if there are any unread messages
+  const hasUnreadMessages = chatList.some(
+    (conversation: any) => conversation.unread_count > 0,
+  );
+
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col bg-stone-50/50 text-center text-black sm:border-transparent sm:shadow-lg dark:bg-black dark:text-white">
       {/* Page Content */}
@@ -72,7 +80,12 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <MessageSquare size={18} />
+              <div className="relative">
+                <MessageSquare size={18} />
+                {hasUnreadMessages && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full border-2 border-red-800/90 bg-white"></span>
+                )}
+              </div>
               <span>Messages</span>
             </NavLink>
 

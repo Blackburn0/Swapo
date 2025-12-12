@@ -198,7 +198,12 @@ const TradeDetails = () => {
           <h2 className="mb-3 text-left text-sm font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
             Trading Partner
           </h2>
-          <div className="flex items-center space-x-4">
+          <div
+            className="flex cursor-pointer items-center space-x-4"
+            onClick={() =>
+              navigate(`/app/dashboard/profile/${otherUser?.user_id}`)
+            }
+          >
             <img
               src={
                 otherUser?.profile_picture_url ||
