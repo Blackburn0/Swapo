@@ -32,6 +32,8 @@ import DeleteAccount from '@/pages/DeleteAccount';
 import ProtectedRoute from './ProtectedRoute';
 import OtherUserProfile from '@/pages/dashboard/OtherUserProfile';
 import ProposalDetails from '@/pages/dashboard/ProposalDetails';
+import SkillDiscovery from '../onboarding/SkillDiscovery';
+import AddSkills from '../AddSkills';
 
 const AppRoutes = () => {
   return (
@@ -62,6 +64,7 @@ const AppRoutes = () => {
           <Route path="filter-listing" element={<Filters />} />
           <Route path="messages" element={<Messages />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/add-skills" element={<AddSkills />} />
           <Route path="profile/:userId" element={<OtherUserProfile />} />
           <Route path="trade/:tradeId" element={<TradeDetails />} />
           <Route path="proposal/:proposalId" element={<ProposalDetails />} />
@@ -74,10 +77,10 @@ const AppRoutes = () => {
           <Route path="settings/blocked" element={<BlockedUsers />} />
           <Route path="settings/help" element={<HelpCenter />} />
           <Route path="settings/about" element={<About />} />
+          <Route path="notification" element={<Notifications />} />
         </Route>
 
         <Route path="/app/onboarding" element={<Onboarding />} />
-        <Route path="/app/dashboard/notification" element={<Notifications />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
       </Route>

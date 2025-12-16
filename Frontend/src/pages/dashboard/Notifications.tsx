@@ -1,20 +1,23 @@
 import { useMemo } from 'react';
-import {
-  Bell,
-  ChevronLeft,
-} from 'lucide-react';
+import { Bell, ChevronLeft } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const Notifications = () => {
   const navigate = useNavigate();
-  const { notifications, isLoading, markAllAsRead, markAsRead } = useNotifications();
+  const { notifications, isLoading, markAllAsRead, markAsRead } =
+    useNotifications();
 
   // Filter notifications to show only required types
   const filteredNotifications = useMemo(() => {
     return notifications.filter((n) =>
-      ['new_message', 'trade_proposal', 'trade_accepted', 'system_alert'].includes(n.type)
+      [
+        'new_message',
+        'trade_proposal',
+        'trade_accepted',
+        'system_alert',
+      ].includes(n.type),
     );
   }, [notifications]);
 
@@ -25,7 +28,11 @@ const Notifications = () => {
     const older: typeof filteredNotifications = [];
 
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
     const yesterdayStart = new Date(todayStart);
     yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
@@ -47,7 +54,7 @@ const Notifications = () => {
     markAllAsRead.mutate();
   };
 
-  const handleNotificationClick = (notification: typeof notifications[0]) => {
+  const handleNotificationClick = (notification: (typeof notifications)[0]) => {
     // Mark as read
     if (!notification.is_read) {
       markAsRead.mutate(notification.notification_id);
@@ -60,9 +67,11 @@ const Notifications = () => {
           navigate('/app/dashboard/messages', {
             state: {
               userId: notification.sender_details.user_id,
-              username: notification.sender_details.first_name && notification.sender_details.last_name
-                ? `${notification.sender_details.first_name} ${notification.sender_details.last_name}`
-                : notification.sender_details.username,
+              username:
+                notification.sender_details.first_name &&
+                notification.sender_details.last_name
+                  ? `${notification.sender_details.first_name} ${notification.sender_details.last_name}`
+                  : notification.sender_details.username,
             },
           });
         } else {
@@ -71,14 +80,18 @@ const Notifications = () => {
         break;
       case 'trade_proposal':
         if (notification.proposal_details) {
-          navigate(`/app/dashboard/proposal/${notification.proposal_details.proposal_id}`);
+          navigate(
+            `/app/dashboard/proposal/${notification.proposal_details.proposal_id}`,
+          );
         } else {
           navigate('/app/dashboard/trade');
         }
         break;
       case 'trade_accepted':
         if (notification.trade_details) {
-          navigate(`/app/dashboard/trade/${notification.trade_details.trade_id}`);
+          navigate(
+            `/app/dashboard/trade/${notification.trade_details.trade_id}`,
+          );
         } else {
           navigate('/app/dashboard/trade');
         }
@@ -91,7 +104,7 @@ const Notifications = () => {
     }
   };
 
-  const getNotificationTitle = (notification: typeof notifications[0]) => {
+  const getNotificationTitle = (notification: (typeof notifications)[0]) => {
     switch (notification.type) {
       case 'new_message':
         return notification.sender_details
@@ -108,7 +121,7 @@ const Notifications = () => {
     }
   };
 
-  const getNotificationIcon = (notification: typeof notifications[0]) => {
+  const getNotificationIcon = (notification: (typeof notifications)[0]) => {
     if (notification.type === 'system_alert') {
       return 'text-red-500 bg-red-50 dark:bg-red-900/20';
     }
@@ -127,7 +140,9 @@ const Notifications = () => {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-600 dark:text-gray-400">Loading notifications...</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Loading notifications...
+        </p>
       </div>
     );
   }
@@ -199,18 +214,18 @@ const Notifications = () => {
 
                         {/* Text */}
                         <div className="flex-1">
-                          <div className="flex items-center justify-between">
+                          <div className="flex justify-between">
                             <h3 className="text-sm font-semibold text-gray-900 md:text-base dark:text-white">
                               {getNotificationTitle(n)}
                             </h3>
                             {!n.is_read && (
-                              <span className="h-2 w-2 rounded-full bg-red-500" />
+                              <span className="h-2.5 w-2.5 rounded-full border-2 border-red-500 bg-white" />
                             )}
                           </div>
-                          <p className="mt-0.5 text-sm leading-snug text-gray-600 dark:text-gray-300">
+                          <p className="mt-0.5 text-left text-sm leading-snug text-gray-600 dark:text-gray-300">
                             {n.message_text}
                           </p>
-                          <p className="mt-2 text-xs text-gray-400 md:text-sm">
+                          <p className="mt-2 text-left text-xs text-gray-400 md:text-sm">
                             {formatTime(n.timestamp)}
                           </p>
                         </div>
@@ -242,7 +257,7 @@ const Notifications = () => {
                         ) : (
                           <div
                             className={clsx(
-                              'flex h-10 w-10 items-center justify-center rounded-full md:h-12 md:w-12',
+                              'flex h-10 w-10 justify-center rounded-full md:h-12 md:w-12',
                               getNotificationIcon(n),
                             )}
                           >
@@ -254,10 +269,10 @@ const Notifications = () => {
                           <h3 className="text-sm font-semibold text-gray-900 md:text-base dark:text-white">
                             {getNotificationTitle(n)}
                           </h3>
-                          <p className="mt-0.5 text-sm leading-snug text-gray-600 dark:text-gray-300">
+                          <p className="mt-0.5 text-left text-sm leading-snug text-gray-600 dark:text-gray-300">
                             {n.message_text}
                           </p>
-                          <p className="mt-2 text-xs text-gray-400 md:text-sm dark:text-gray-400">
+                          <p className="mt-2 text-left text-xs text-gray-400 md:text-sm dark:text-gray-400">
                             {formatTime(n.timestamp)}
                           </p>
                         </div>
@@ -278,7 +293,7 @@ const Notifications = () => {
                       <div
                         key={n.notification_id}
                         onClick={() => handleNotificationClick(n)}
-                        className="flex cursor-pointer items-start gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:bg-gray-50 md:p-5 dark:bg-gray-700 dark:hover:bg-gray-600"
+                        className="flex cursor-pointer gap-3 rounded-xl bg-white p-4 text-left shadow-sm transition hover:bg-gray-50 md:p-5 dark:bg-gray-700 dark:hover:bg-gray-600"
                       >
                         {n.sender_details?.profile_picture_url ? (
                           <img

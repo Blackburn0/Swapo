@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import ProgressBar from './ProgressBar';
-import axios from "@/utils/axiosInstance";
-import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/useToast";
+import axios from '@/utils/axiosInstance';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/useToast';
 
 interface SkillDiscoveryProps {
   onNext: () => void;
@@ -14,19 +14,18 @@ interface SkillDiscoveryProps {
 
 const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
   const [skills, setSkills] = useState<string[]>([
-    "Photography",
-    "Graphic Design",
-    "Video Editing",
+    'Photography',
+    'Graphic Design',
+    'Video Editing',
   ]);
 
   const [lookingFor, setLookingFor] = useState<string[]>([]);
-  const [skillInput, setSkillInput] = useState("");
-  const [lookingInput, setLookingInput] = useState("");
+  const [skillInput, setSkillInput] = useState('');
+  const [lookingInput, setLookingInput] = useState('');
 
   const { token } = useAuth();
   const { showToast } = useToast();
 
-  // ✅ FIXED: saveSkills INSIDE THE COMPONENT
   const saveSkills = async () => {
     try {
       // Auto-add any pending input values before submitting
@@ -37,45 +36,48 @@ const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
         finalSkills.push(skillInput.trim());
       }
 
-      if (lookingInput.trim() && !finalLookingFor.includes(lookingInput.trim())) {
+      if (
+        lookingInput.trim() &&
+        !finalLookingFor.includes(lookingInput.trim())
+      ) {
         finalLookingFor.push(lookingInput.trim());
       }
 
       const payload = {
         offerings: finalSkills.map((s) => ({
           skill_name: s,
-          proficiency_level: "Beginner",
+          proficiency_level: 'Beginner',
         })),
         desires: finalLookingFor.map((s) => ({
           skill_name: s,
         })),
       };
 
-      console.log("Submitting payload:", payload);
+      console.log('Submitting payload:', payload);
 
-      await axios.post("/user-skills/add-skills/", payload, {
+      await axios.post('/user-skills/add-skills/', payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      showToast("Skills saved successfully!", "success");
+      showToast('Skills saved successfully!', 'success');
       onNext();
     } catch (err: any) {
       console.error(err);
-      showToast("Failed to save skills", "error");
+      showToast('Failed to save skills', 'error');
     }
   };
 
   const addSkill = () => {
     if (skillInput.trim() && !skills.includes(skillInput.trim())) {
       setSkills([...skills, skillInput.trim()]);
-      setSkillInput("");
+      setSkillInput('');
     }
   };
 
   const addLooking = () => {
     if (lookingInput.trim() && !lookingFor.includes(lookingInput.trim())) {
       setLookingFor([...lookingFor, lookingInput.trim()]);
-      setLookingInput("");
+      setLookingInput('');
     }
   };
 
@@ -111,7 +113,7 @@ const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
         </p>
 
         {/* Your Skills */}
-        <div className="mt-8 text-left space-y-4">
+        <div className="mt-8 space-y-4 text-left">
           <label className="block font-medium text-gray-800 md:text-lg">
             Your Skills
           </label>
@@ -132,7 +134,10 @@ const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
 
           <div className="mt-3 flex flex-wrap gap-2">
             {skills.map((s) => (
-              <span key={s} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-full flex items-center gap-2">
+              <span
+                key={s}
+                className="flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-red-600"
+              >
                 {s}
                 <button onClick={() => removeSkill(s)}>
                   <X size={14} />
@@ -143,7 +148,7 @@ const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
         </div>
 
         {/* Looking For */}
-        <div className="mt-8 text-left space-y-4">
+        <div className="mt-8 space-y-4 text-left">
           <label className="block font-medium text-gray-800 md:text-lg">
             Looking for
           </label>
@@ -164,7 +169,10 @@ const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
 
           <div className="mt-3 flex flex-wrap gap-2">
             {lookingFor.map((s) => (
-              <span key={s} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-full flex items-center gap-2">
+              <span
+                key={s}
+                className="flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-red-600"
+              >
                 {s}
                 <button onClick={() => removeLooking(s)}>
                   <X size={14} />
@@ -178,7 +186,10 @@ const SkillDiscovery = ({ onNext, onGoTo, step }: SkillDiscoveryProps) => {
       {/* Next Button */}
       <div>
         <ProgressBar total={3} current={step} onChange={onGoTo} />
-        <Button onClick={saveSkills} className="mx-auto mt-6 w-full bg-[#FF2E2E]">
+        <Button
+          onClick={saveSkills}
+          className="mx-auto mt-6 w-full bg-[#FF2E2E]"
+        >
           Next
         </Button>
       </div>

@@ -7,24 +7,28 @@ import {
   ThumbsDown,
   ThumbsUp,
   Sparkles,
+  PlusCircle,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '@/utils/axiosInstance';
 import { useAuth } from '@/context/AuthContext';
+import EmptySkillsState from '@/utils/EmptySkillsState';
 
 const nav = ['All', 'Offered Skills', 'Desired Skills', 'Portfolio'];
 
 interface UserSkill {
   user_skill_id: number;
+  user_id: number;
+  skill: number;
   skill_name: string;
+  skill_type: 'offering' | 'desiring';
   proficiency_level?: string;
   details?: string;
 }
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('All');
   const [reviewers, setReviewers] = useState([
     {
@@ -114,10 +118,12 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserSkills = async () => {
-      if (!user?.user_id) return;
+      if (!profile?.user_id) return setSkillsLoading(false);
 
       try {
-        const res = await axios.get(`/user-skills/${user.user_id}/`);
+        const res = await axios.get(`/user-skills/${profile.user_id}/`);
+        //console.log('Fetched skills:', res.data);
+
         setOfferedSkills(res.data.offerings || []);
         setDesiredSkills(res.data.desires || []);
       } catch (err) {
@@ -128,7 +134,7 @@ const Profile = () => {
     };
 
     fetchUserSkills();
-  }, [user]);
+  }, [profile?.user_id]);
 
   if (loading || !profile) {
     return <p className="p-10 text-center">Loading profile...</p>;
@@ -214,9 +220,19 @@ const Profile = () => {
         {/* Skills Cards */}
         {(activeTab === 'All' || activeTab === 'Offered Skills') && (
           <div>
-            <h2 className="mt-3 mb-6 text-left text-xl font-bold text-gray-900 dark:text-gray-100">
-              Offered Skills
-            </h2>
+            <div className="mt-3 mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                Offered Skills
+              </h2>
+              {/* Add more skills */}
+              <div
+                title="Add more skills"
+                className="cursor-pointer"
+                onClick={() => navigate('/app/dashboard/profile/add-skills')}
+              >
+                <PlusCircle size={18} />
+              </div>
+            </div>
             {skillsLoading ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Loading skills...
@@ -237,7 +253,7 @@ const Profile = () => {
                         {skill.skill_name}
                       </span>
                       {skill.proficiency_level && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-left text-xs text-gray-500 dark:text-gray-400">
                           {skill.proficiency_level}
                         </span>
                       )}
@@ -246,18 +262,30 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No skills offered yet
-              </p>
+              <EmptySkillsState
+                title="No offered skills yet"
+                description="Add skills you can offer to attract collaborations."
+                onAdd={() => navigate('/app/dashboard/profile/add-skills')}
+              />
             )}
           </div>
         )}
 
         {(activeTab === 'All' || activeTab === 'Desired Skills') && (
           <div>
-            <h2 className="mt-3 mb-6 text-left text-xl font-bold text-gray-900 dark:text-gray-100">
-              Desired Skills
-            </h2>
+            <div className="mt-3 mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                Desired Skills
+              </h2>
+              {/* Add more skills */}
+              <div
+                title="Add more skills"
+                className="cursor-pointer"
+                onClick={() => navigate('/app/dashboard/profile/add-skills')}
+              >
+                <PlusCircle size={18} />
+              </div>
+            </div>
             {skillsLoading ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Loading skills...
@@ -287,9 +315,11 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No skills desired yet
-              </p>
+              <EmptySkillsState
+                title="No offered skills yet"
+                description="Add skills you can offer to attract collaborations."
+                onAdd={() => navigate('/app/dashboard/profile/add-skills')}
+              />
             )}
           </div>
         )}
