@@ -119,13 +119,21 @@ const DashboardHome = () => {
           </div>
         </div>
         <div
-          className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-transparent bg-white/20"
+          className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/20"
           onClick={() => navigate('/app/dashboard/notification')}
         >
-          <Bell size={18} />
+          <Bell
+            size={18}
+            className={
+              unreadCount > 0
+                ? 'origin-top animate-[shake_0.6s_ease-in-out_infinite] text-white'
+                : ''
+            }
+          />
+
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {unreadCount > 10 ? '10+' : unreadCount}
             </span>
           )}
         </div>

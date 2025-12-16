@@ -31,7 +31,7 @@ const Trade = () => {
         });
 
   return (
-    <div className="mx-auto min-h-screen max-w-xl bg-stone-50 py-5 dark:bg-gray-900">
+    <div className="mx-auto mb-5 min-h-screen max-w-xl bg-stone-50 py-5 dark:bg-gray-900">
       {/* Header */}
       <div className="relative mb-8 flex items-center justify-center border-b border-gray-200 pb-4 dark:border-gray-700">
         <ChevronLeft

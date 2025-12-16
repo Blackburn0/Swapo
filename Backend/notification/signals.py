@@ -32,7 +32,12 @@ def create_trade_proposal_notification(sender, instance, created, **kwargs):
         )
     elif not created and instance.status == "accepted":
         # Notify the proposer when their proposal is accepted
-        recipient_name = f"{instance.recipient.first_name} {instance.recipient.last_name}" if instance.recipient.first_name else instance.recipient.username
+        recipient_name = (
+            f"{instance.recipient.first_name} {instance.recipient.last_name}"
+            if instance.recipient.first_name
+            else instance.recipient.username
+        ).title()
+
         Notification.objects.create(
             user=instance.proposer,
             proposal=instance,
@@ -40,7 +45,6 @@ def create_trade_proposal_notification(sender, instance, created, **kwargs):
             message_text=f"{recipient_name} accepted your trade proposal!",
             link_url=f"/app/dashboard/proposal/{instance.proposal_id}"
         )
-
 
 @receiver(post_save, sender=Trade)
 def create_trade_notification(sender, instance, created, **kwargs):
