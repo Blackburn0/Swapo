@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings  # for referencing Users
-from .models import Trade  # TODO: replace this to Tradess model, using this as a placeholder
+from django.conf import settings
+from trade.models import Trade
 
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)

@@ -1,4 +1,49 @@
-*.env
+# Python
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
 db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environment
+*.env
+.env
+.env.local
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migrations (optional - uncomment if you want to ignore migrations)
+# */migrations/
+
+# Cache and compiled files
+*/__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local settings
+local_settings.py

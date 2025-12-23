@@ -25,16 +25,19 @@ class AddUserSkillSerializer(serializers.Serializer):
 
     def add_skills(skill_list, skill_type):
       for skill_data in skill_list:
-        skill_id = skill_data.get('skill_id')
-        skill_name = skill_data.get('skill_name', f"Skill {skill_id}")
+        skill_name = skill_data.get('skill_name')
+        
+        # Skip if no skill name provided
+        if not skill_name:
+          continue
+        
         category = skill_data.get('category', 'General')
         description = skill_data.get('description', '')
 
-        # Get or create Skill safely
+        # Get or create Skill by skill_name (not skill_id)
         skill_obj, _ = Skill.objects.get_or_create(
-          skill_id=skill_id,
+          skill_name=skill_name,
           defaults={
-            'skill_name': skill_name,
             'category': category,
             'description': description
           }
@@ -65,49 +68,50 @@ class AddUserSkillSerializer(serializers.Serializer):
       return UserSkillSerializer(instance, many=True).data
 
 
-
-
 """
-Example Response
+Example Request/Response
 
 POST /user-skills/add-skills/ with:
 
 {
   "offerings": [
-    {"skill_id": 1, "proficiency_level": "Expert"},
-    {"skill_id": 2}
+    {"skill_name": "Photography", "proficiency_level": "Expert"},
+    {"skill_name": "Graphic Design", "proficiency_level": "Beginner"}
   ],
   "desires": [
-    {"skill_id": 3, "details": "Want to learn guitar"}
+    {"skill_name": "Guitar", "details": "Want to learn guitar"}
   ]
 }
 
 Response:
 
-[
-  {
-    "user_skill_id": 10,
-    "user_id": 5,
-    "skill": 1,
-    "skill_type": "offering",
-    "proficiency_level": "Expert",
-    "details": ""
-  },
-  {
-    "user_skill_id": 11,
-    "user_id": 5,
-    "skill": 2,
-    "skill_type": "offering",
-    "proficiency_level": null,
-    "details": ""
-  },
-  {
-    "user_skill_id": 12,
-    "user_id": 5,
-    "skill": 3,
-    "skill_type": "desiring",
-    "proficiency_level": null,
-    "details": "Want to learn guitar"
-  }
-]
+{
+  "message": "3 skills added successfully",
+  "skills": [
+    {
+      "user_skill_id": 10,
+      "user_id": 5,
+      "skill": 1,
+      "skill_type": "offering",
+      "proficiency_level": "Expert",
+      "details": ""
+    },
+    {
+      "user_skill_id": 11,
+      "user_id": 5,
+      "skill": 2,
+      "skill_type": "offering",
+      "proficiency_level": "Beginner",
+      "details": ""
+    },
+    {
+      "user_skill_id": 12,
+      "user_id": 5,
+      "skill": 3,
+      "skill_type": "desiring",
+      "proficiency_level": null,
+      "details": "Want to learn guitar"
+    }
+  ]
+}
 """

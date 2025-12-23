@@ -18,9 +18,9 @@ class UserBlock(models.Model):
   reason = models.TextField(blank=True, null=True)
 
   class Meta:
-    unique_together = ('blocker', 'blocked')
-    verbose_name = 'User Block'
-    verbose_name_plural = 'User Blocks'
+        unique_together = ('blocker', 'blocked')
+        verbose_name = 'User Block'
+        verbose_name_plural = 'User Blocks'
 
   def __str__(self):
-    return f"{self.blocker} blocked {self.blocked}"
+      return f"{self.blocker} blocked {self.blocked}"

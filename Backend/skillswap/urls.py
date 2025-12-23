@@ -14,34 +14,53 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.views.generic import TemplateView
+
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     path("", lambda request: HttpResponse("Welcome to SkillSwap!")), 
 
-    # auth endpoints
-    # custom endpoints (register, login overrides, etc.)
+      # Auth endpoints
     path("api/v1/auth/", include("accounts.urls")),
-    # dj-rest-auth built-in endpoints
     path("api/v1/auth/", include("dj_rest_auth.urls")),
-    # dj-rest-auth registration
     path("api/v1/auth/registration/", include("dj_rest_auth.registration.urls")),
-    # Social login redirects & callbacks
+
+    # Social login (google/github) — Allauth handles provider logic
     path("accounts/", include("allauth.urls")),
+    path("accounts/oauth/callback/", lambda request: redirect("/api/v1/auth/oauth/callback/")),
+
+
+
+
 
     # user-skill endpoints
-    path("api/v1/", include("userSkills.urls")),
+    path("api/v1/user-skills/", include("userSkills.urls")),
     # Other endpoints
-    path("api/v1/", include('skills.urls')),
-    path("api/v1/", include("listings.urls")),
-    path("api/v1/", include("reviews.urls")),
-    path("api/v1/", include("userblocks.urls"))
+    path("api/v1/skills/", include('skills.urls')),
+    path("api/v1/listings/", include("listings.urls")),
+    path("api/v1/reviews/", include("reviews.urls")),
+    path("api/v1/userblocks/", include("userblocks.urls")),
+
+    path('api/v1/trades/', include('trade.urls')),
+    path('api/v1/notifications/', include('notification.urls')),
+    path('api/v1/messages/', include('message.urls')),
+
+
+    # then in urlpatterns
+    path("api/docs/", TemplateView.as_view(template_name="api_docs.html"), name="api-docs"),
+
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # check site_id in shell
 # python manage.py shell

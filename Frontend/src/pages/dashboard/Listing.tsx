@@ -1,0 +1,311 @@
+import { useState, useEffect } from 'react';
+import { Search, SlidersHorizontal, X, Tag, Briefcase } from 'lucide-react';
+import clsx from 'clsx';
+import Button from '@/components/ui/Button';
+import { useNavigate } from 'react-router-dom';
+import axios from '@/utils/axiosInstance';
+
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
+export interface Listing {
+  listing_id: number;
+  user_id: number;
+  skill_offered_name: string;
+  skill_desired: number;
+  skill_desired_name: string;
+  title: string;
+  user: {
+    first_name: string;
+    last_name: string;
+    username: string;
+    user_id: number;
+    profile_picture_url: string;
+  };
+}
+
+const categories = ['All', 'Design', 'Development', 'Marketing'];
+
+const getCategory = (skillName: string) => {
+  if (!skillName) return 'Other';
+  skillName = skillName.toLowerCase();
+  if (skillName.includes('design')) return 'Design';
+  if (skillName.includes('developer') || skillName.includes('engineer'))
+    return 'Development';
+  if (
+    skillName.includes('marketing') ||
+    skillName.includes('seo') ||
+    skillName.includes('social')
+  )
+    return 'Marketing';
+  return 'Other';
+};
+
+const ListingPage = () => {
+  const navigate = useNavigate();
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loadingListing, setLoadingListing] = useState(false);
+
+  const [_loadingUserProfile, setLoadingUserProfile] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get('/auth/me');
+        setProfile(res.data.user);
+      } catch (err) {
+        console.error('Failed to load user profile:', err);
+      } finally {
+        setLoadingUserProfile(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      setLoadingListing(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/listings/`);
+        if (!res.ok) throw new Error('Failed to fetch listings');
+        const data: Listing[] = await res.json();
+        setListings(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingListing(false);
+      }
+    };
+    fetchListings();
+  }, []);
+
+  // Map API data to component format
+  const mappedListings = listings.map((l) => ({
+    ...l,
+    id: l.listing_id,
+    name:
+      l.user?.first_name && l.user?.last_name
+        ? `${l.user.first_name} ${l.user.last_name}`
+        : l.user?.username || `User ${l.user_id}`,
+    image:
+      l?.user?.profile_picture_url ||
+      'https://img.icons8.com/office/40/person-female.png',
+  }));
+
+  const filteredListings = mappedListings.filter((l) => {
+    const listingCategory = getCategory(l.skill_offered_name);
+    const matchesCategory =
+      activeCategory === 'All' || listingCategory === activeCategory;
+    const matchesSearch =
+      l.name.toLowerCase().includes(search.toLowerCase()) ||
+      l.skill_offered_name.toLowerCase().includes(search.toLowerCase()) ||
+      l.skill_desired_name.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+  // /console.log('listings', listings);
+
+  return (
+    <div className="min-h-screen bg-white px-4 pt-5 pb-20 md:px-8 dark:bg-black">
+      {/* Header */}
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900 md:text-2xl dark:text-white">
+          Browse Skills
+        </h1>
+        <button
+          onClick={() => setIsFilterOpen(true)}
+          className="cursor-pointer rounded-full bg-gray-100 p-2.5 transition hover:bg-gray-200 dark:bg-black/10"
+          aria-label="Open Filters"
+        >
+          <SlidersHorizontal
+            size={22}
+            className="text-gray-700 dark:text-white"
+          />
+        </button>
+      </div>
+
+      {/* Search Input */}
+      <div className="relative mb-5">
+        <Search
+          size={18}
+          className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 dark:text-white"
+        />
+        <input
+          type="text"
+          placeholder="Search skills, people or trades..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pr-4 pl-11 text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:outline-none dark:bg-gray-700"
+        />
+      </div>
+
+      {/* Category Tabs */}
+      <div className="no-scrollbar mb-6 flex space-x-3 overflow-x-auto pb-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={clsx(
+              'cursor-pointer rounded-full px-5 py-2 text-sm font-medium whitespace-nowrap transition',
+              activeCategory === cat
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-white',
+            )}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Skill Cards */}
+      {loadingListing ? (
+        <p className="text-center text-gray-500">Loading listings...</p>
+      ) : (
+        <div className="grid gap-5">
+          {filteredListings.map((listing) => {
+            return (
+              <div
+                key={listing.id}
+                className="rounded-2xl border border-gray-100 p-5 shadow-sm transition hover:shadow-md"
+              >
+                <div className="flex gap-4">
+                  <img
+                    src={listing.image}
+                    alt={listing.name}
+                    className="h-14 w-14 cursor-pointer rounded-full object-cover"
+                    onClick={() => {
+                      const isOwner = profile?.user_id === listing.user_id;
+                      isOwner
+                        ? navigate(`/app/dashboard/profile`)
+                        : navigate(
+                            `/app/dashboard/profile/${listing.listing_id}`,
+                          );
+                    }}
+                  />
+                  <div className="text-left">
+                    <h2
+                      className="cursor-pointer text-lg font-semibold text-gray-900 capitalize dark:text-white"
+                      onClick={() => {
+                        const isOwner = profile?.user_id === listing.user_id;
+                        isOwner
+                          ? navigate(`/app/dashboard/profile`)
+                          : navigate(
+                              `/app/dashboard/profile/${listing.listing_id}`,
+                            );
+                      }}
+                    >
+                      {listing.name}
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-300">
+                      {listing.title || 'No Title'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Tag size={16} className="text-red-500" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        Offering:
+                      </span>{' '}
+                      {listing.skill_offered_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Briefcase
+                      size={16}
+                      className="text-gray-500 dark:text-white"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        Seeking:
+                      </span>{' '}
+                      {listing.skill_desired_name}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex gap-3">
+                  {/* View Profile Button */}
+                  <Button
+                    className="flex-1 rounded-xl bg-gray-300 py-2 text-sm text-gray-900 hover:bg-gray-400 dark:bg-gray-700 dark:text-white"
+                    onClick={() => {
+                      const isOwner = profile?.user_id === listing.user_id;
+                      isOwner
+                        ? navigate(`/app/dashboard/profile`)
+                        : navigate(`/app/dashboard/profile/${listing.user_id}`);
+                    }}
+                  >
+                    View Profile
+                  </Button>
+
+                  {/* Propose Trade Button */}
+                  {profile?.user_id !== listing.user_id && (
+                    <Button
+                      className="flex-1 rounded-xl bg-red-600 py-2 text-sm text-white hover:bg-red-700"
+                      onClick={() =>
+                        navigate('/app/dashboard/propose-trade', {
+                          state: { listing },
+                        })
+                      }
+                    >
+                      Propose Trade
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {filteredListings.length === 0 && (
+            <p className="col-span-full mt-10 text-center text-gray-500">
+              No results found.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Filter Drawer */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 md:items-center">
+          <div className="w-full rounded-t-2xl border border-white/30 bg-white/70 p-6 shadow-lg backdrop-blur-md md:max-w-md md:rounded-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+              <button
+                onClick={() => setIsFilterOpen(false)}
+                className="rounded-full p-2 hover:bg-gray-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mb-5 space-y-3">
+              <label className="flex items-center gap-2 text-gray-700">
+                <input type="checkbox" className="accent-red-600" /> Remote Only
+              </label>
+              <label className="flex items-center gap-2 text-gray-700">
+                <input type="checkbox" className="accent-red-600" /> Verified
+                Users
+              </label>
+              <label className="flex items-center gap-2 text-gray-700">
+                <input type="checkbox" className="accent-red-600" /> With
+                Portfolio
+              </label>
+            </div>
+            <Button
+              fullWidth
+              onClick={() => setIsFilterOpen(false)}
+              className="rounded-xl bg-red-600 text-white hover:bg-red-700"
+            >
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ListingPage;

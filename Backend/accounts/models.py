@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
+import uuid
+from django.conf import settings
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -7,9 +10,11 @@ class UserManager(BaseUserManager):
             raise ValueError("Users must have an email address")
         email = self.normalize_email(email)
 
-        # Merge accounts for multiple signins
-        # If a user signs in with Google or GitHub later, check if a user with the same email exists.
-        # If so, update that user with the new provider's ID instead of creating a duplicate account.
+        username = extra_fields.pop("username", None)
+        if not username:
+            username = f"user_{uuid.uuid4().hex[:12]}"
+
+        # Check for existing user with same email
         existing_user = self.model.objects.filter(email=email).first()
         if existing_user:
             # Update IDs if provided
@@ -22,7 +27,7 @@ class UserManager(BaseUserManager):
             existing_user.save(using=self._db)
             return existing_user
 
-        user = self.model(email=email, **extra_fields)
+        user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -34,11 +39,31 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True, max_length=255)
+    user_id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=150)
+    email = models.EmailField(unique=True)
+    password_hash = models.CharField(max_length=128)
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    role = models.CharField(max_length=150, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    profile_picture_url = models.URLField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    registration_date = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(blank=True, null=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True)
+    num_reviews = models.IntegerField(default=0)
     googleId = models.CharField(unique=True, max_length=255, blank=True, null=True)
     githubId = models.CharField(unique=True, max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    
+    # Add this field for OAuth users
+    is_profile_complete = models.BooleanField(default=False)
+
+    @property
+    def id(self):
+        return self.user_id
 
     objects = UserManager()
 
@@ -47,3 +72,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class UserPrivacy(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="privacy")
+
+    public_profile = models.BooleanField(default=True)
+    public_skills = models.BooleanField(default=True)
+    public_trades = models.BooleanField(default=False)
+
+    CONTACT_CHOICES = [
+        ("Everyone", "Everyone"),
+        ("People with mutual skills", "People with mutual skills"),
+        ("No one", "No one"),
+    ]
+    contact_option = models.CharField(max_length=50, choices=CONTACT_CHOICES, default="Everyone")
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s privacy settings"

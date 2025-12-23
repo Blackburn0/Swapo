@@ -3,9 +3,13 @@ from rest_framework.routers import DefaultRouter
 from .views import SkillViewSet
 
 router = DefaultRouter()
-router.register(r'skills', SkillViewSet)
+router.register(r'', SkillViewSet)
 
-urlpatterns = router.urls
+# urlpatterns = router.urls
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
 
 #  Endpoints 👇:
 
