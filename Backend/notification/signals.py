@@ -48,12 +48,12 @@ def create_trade_proposal_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Trade)
 def create_trade_notification(sender, instance, created, **kwargs):
-    """Create notification when a trade is created"""
+    """Create notification when a trade is created or status changes"""
+    user1_name = f"{instance.user1.first_name} {instance.user1.last_name}" if instance.user1.first_name else instance.user1.username
+    user2_name = f"{instance.user2.first_name} {instance.user2.last_name}" if instance.user2.first_name else instance.user2.username
+    
     if created and instance.proposal:
         # Notify both users that a trade has been created
-        user1_name = f"{instance.user1.first_name} {instance.user1.last_name}" if instance.user1.first_name else instance.user1.username
-        user2_name = f"{instance.user2.first_name} {instance.user2.last_name}" if instance.user2.first_name else instance.user2.username
-        
         # Notify user2
         Notification.objects.create(
             user=instance.user2,
@@ -71,3 +71,36 @@ def create_trade_notification(sender, instance, created, **kwargs):
             message_text=f"Trade started with {user2_name}: {instance.skill1.skill_name} ↔ {instance.skill2.skill_name}",
             link_url=f"/app/dashboard/trade/{instance.trade_id}"
         )
+    
+    elif not created and instance.status in ['active', 'in_progress']:
+        # Notify both users when trade becomes active or in progress
+        # Check if notification already exists to avoid duplicates
+        existing_active_notif_user1 = Notification.objects.filter(
+            user=instance.user1,
+            trade=instance,
+            type="trade_active"
+        ).exists()
+        
+        existing_active_notif_user2 = Notification.objects.filter(
+            user=instance.user2,
+            trade=instance,
+            type="trade_active"
+        ).exists()
+        
+        if not existing_active_notif_user2:
+            Notification.objects.create(
+                user=instance.user2,
+                trade=instance,
+                type="trade_active",
+                message_text=f"Trade with {user1_name} is now {instance.status}: {instance.skill1.skill_name} ↔ {instance.skill2.skill_name}",
+                link_url=f"/app/dashboard/trade/{instance.trade_id}"
+            )
+        
+        if not existing_active_notif_user1:
+            Notification.objects.create(
+                user=instance.user1,
+                trade=instance,
+                type="trade_active",
+                message_text=f"Trade with {user2_name} is now {instance.status}: {instance.skill1.skill_name} ↔ {instance.skill2.skill_name}",
+                link_url=f"/app/dashboard/trade/{instance.trade_id}"
+            )

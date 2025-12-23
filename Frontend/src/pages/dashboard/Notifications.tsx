@@ -16,6 +16,7 @@ const Notifications = () => {
         'new_message',
         'trade_proposal',
         'trade_accepted',
+        'trade_active',
         'system_alert',
       ].includes(n.type),
     );
@@ -88,6 +89,7 @@ const Notifications = () => {
         }
         break;
       case 'trade_accepted':
+      case 'trade_active':
         if (notification.trade_details) {
           navigate(
             `/app/dashboard/trade/${notification.trade_details.trade_id}`,
@@ -114,6 +116,8 @@ const Notifications = () => {
         return 'New Trade Proposal';
       case 'trade_accepted':
         return 'Trade Accepted';
+      case 'trade_active':
+        return 'Active Trade';
       case 'system_alert':
         return 'System Announcement';
       default:

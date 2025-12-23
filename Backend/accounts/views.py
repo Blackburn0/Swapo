@@ -1,6 +1,6 @@
 from rest_framework import generics, status, permissions
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from rest_framework.response import Response
 from django.db import IntegrityError, DatabaseError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -18,9 +18,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from urllib.parse import urlencode
 from rest_framework.parsers import MultiPartParser, FormParser
 import logging
-from django.contrib.auth import authenticate
+from cloudinary.uploader import upload as cloudinary_upload
 
-
+from listings.models import PortfolioImage
+from listings.serializers import UserPortfolioImageSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -342,3 +343,56 @@ class OtherUserProfileView(generics.RetrieveAPIView):
     # This tells DRF to use `user_id` field for lookup
     lookup_field = 'user_id'       
     lookup_url_kwarg = 'user_id'
+
+class UserPortfolioImagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Return all portfolio images for the authenticated user.
+        """
+        images = PortfolioImage.objects.filter(user=request.user)
+        serializer = UserPortfolioImageSerializer(images, many=True)
+        return Response({"portfolio_images": serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        Upload new portfolio images for the user.
+        """
+        files = request.FILES.getlist("portfolio_images")
+        if not files:
+            return Response({"error": "No images provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        uploaded_images = []
+        for file in files:
+            # Upload to Cloudinary
+            result = cloudinary_upload(file)
+            image_url = result.get("secure_url")
+            if not image_url:
+                continue
+
+            # Create PortfolioImage entry
+            portfolio_image = PortfolioImage.objects.create(
+                user=request.user,
+                listing=None,  
+                image_url=image_url
+            )
+            uploaded_images.append(portfolio_image)
+
+        serializer = UserPortfolioImageSerializer(uploaded_images, many=True)
+        return Response({"portfolio_images": serializer.data}, status=status.HTTP_201_CREATED)
+
+
+
+class PortfolioImageDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, image_id):
+        image = get_object_or_404(
+            PortfolioImage,
+            id=image_id,
+            listing__user=request.user
+        )
+        image.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

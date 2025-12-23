@@ -53,3 +53,8 @@ class SkillListingSerializer(serializers.ModelSerializer):
       PortfolioImageSerializer().create({**img_data, 'listing': listing})
 
     return listing
+
+class UserPortfolioImageSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = PortfolioImage
+    fields = ["id", "listing", "image_url", "uploaded_at"]

@@ -68,9 +68,16 @@ class TradeProposalViewSet(viewsets.ModelViewSet):
 
 
 class TradeViewSet(viewsets.ModelViewSet):
-    queryset = Trade.objects.all().order_by("-start_date")
     serializer_class = TradeSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter trades to show only those the user is involved in"""
+        user = self.request.user
+        from django.db.models import Q
+        return Trade.objects.filter(
+            Q(user1=user) | Q(user2=user)
+        ).order_by("-start_date")
 
     @action(detail=True, methods=['post'])
     def completed(self, request, pk=None):
@@ -93,4 +100,3 @@ class TradeViewSet(viewsets.ModelViewSet):
             "detail": "Trade marked as completed",
             "trade": TradeSerializer(trade).data
         }, status=status.HTTP_200_OK)
-    

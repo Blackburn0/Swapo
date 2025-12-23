@@ -11,6 +11,7 @@ from .models import User, UserPrivacy
 from django.contrib.auth import password_validation
 import logging
 from listings.serializers import SkillListingSerializer
+from listings.models import PortfolioImage
 
 logger = logging.getLogger(__name__)
 

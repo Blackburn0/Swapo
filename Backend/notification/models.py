@@ -11,6 +11,7 @@ class Notification(models.Model):
         ("new_message", "New Message"),
         ("trade_proposal", "Trade Proposal"),
         ("trade_accepted", "Trade Accepted"),
+        ("trade_active", "Active Trade"),
         ("trade_completed", "Trade Completed"),
         ("system_alert", "System Alert"),
     ]

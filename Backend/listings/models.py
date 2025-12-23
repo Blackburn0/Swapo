@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from skills.models import Skill
 
 User = get_user_model()
@@ -27,10 +28,17 @@ class SkillListing(models.Model):
       return f"{self.title} ({self.status})"
     
 class PortfolioImage(models.Model):
+  user = models.ForeignKey(
+      settings.AUTH_USER_MODEL,
+      on_delete=models.CASCADE,
+      related_name="portfolio_images"
+  )
   listing = models.ForeignKey(
     SkillListing,
     on_delete=models.CASCADE,
-    related_name='portfolio_images'
+    related_name='portfolio_images',
+    null=True, 
+    blank=True
   )
   image_url = models.URLField()
   uploaded_at = models.DateTimeField(auto_now_add=True)
