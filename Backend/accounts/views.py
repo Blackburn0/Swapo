@@ -351,7 +351,7 @@ class UserPortfolioImagesView(APIView):
         """
         Return all portfolio images for the authenticated user.
         """
-        images = PortfolioImage.objects.filter(user=request.user)
+        images = PortfolioImage.objects.filter(user=request.user, image_url__startswith="https://")
         serializer = UserPortfolioImageSerializer(images, many=True)
         return Response({"portfolio_images": serializer.data}, status=status.HTTP_200_OK)
 
@@ -391,7 +391,7 @@ class PortfolioImageDeleteView(APIView):
         image = get_object_or_404(
             PortfolioImage,
             id=image_id,
-            listing__user=request.user
+            user=request.user
         )
         image.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

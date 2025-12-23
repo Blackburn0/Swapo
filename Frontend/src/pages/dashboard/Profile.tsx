@@ -13,6 +13,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '@/utils/axiosInstance';
 import EmptySkillsState from '@/utils/EmptySkillsState';
+import { useToast } from '@/hooks/useToast';
 
 const nav = ['All', 'Offered Skills', 'Desired Skills', 'Portfolio'];
 
@@ -39,8 +40,9 @@ interface Reviewer {
 interface PortfolioImage {
   id: number;
   image_url: string;
-  uploaded_at: string;
+  uploaded_at?: string;
   listing_id?: number | null;
+  isUploading?: boolean;
 }
 
 interface PortfolioSectionProps {
@@ -126,7 +128,7 @@ const SkillsSection = ({
         {title}
       </h2>
       <div title="Add more skills" className="cursor-pointer" onClick={onAdd}>
-        <PlusCircle size={18} />
+        <PlusCircle size={20} />
       </div>
     </div>
     {loading ? (
@@ -174,36 +176,58 @@ const PortfolioSection = ({
   removeFile,
 }: PortfolioSectionProps) => {
   const [showDropzone, setShowDropzone] = useState(false);
+  const { showToast } = useToast();
+
+  const fetchUserPortfolio = async () => {
+    try {
+      const res = await axios.get('/auth/me/portfolio-images/');
+      // console.log('User Portfolio:', res.data.portfolio_images);
+      setPortfolioImages(res.data.portfolio_images || []);
+    } catch (err) {
+      console.error('Failed to fetch user portfolio:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserPortfolio();
+  }, []);
 
   /** Upload new files to user portfolio */
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
 
+    // Create local preview placeholders
+    const optimisticImages: PortfolioImage[] = files.map((file) => ({
+      id: Date.now() + Math.random(),
+      image_url: URL.createObjectURL(file),
+      isUploading: true,
+    }));
+
+    // Show instantly in UI
+    setPortfolioImages((prev) => [...optimisticImages, ...prev]);
+
     const formData = new FormData();
     files.forEach((file) => formData.append('portfolio_images', file));
 
     try {
-      const res = await axios.post('/auth/me/portfolio-images/', formData, {
+      await axios.post('/auth/me/portfolio-images/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      console.log('Upload response:', res.data);
-
-      // Refresh images by refetching from backend
-      fetchUserPortfolio();
-      // Remove uploaded files from selection
-      setPortfolioFiles((prev) => prev.filter((f) => !files.includes(f)));
-    } catch (err) {
-      console.error('Failed to upload portfolio images:', err);
-    }
-  };
-
-  const fetchUserPortfolio = async () => {
-    try {
+      // Fetch real images from backend
       const res = await axios.get('/auth/me/portfolio-images/');
       setPortfolioImages(res.data.portfolio_images || []);
+
+      setPortfolioFiles((prev) => prev.filter((f) => !files.includes(f)));
+
+      showToast('Image(s) uploaded successfully!', 'success');
     } catch (err) {
-      console.error('Failed to fetch user portfolio:', err);
+      console.error('Upload failed:', err);
+
+      // Remove optimistic images on failure
+      setPortfolioImages((prev) => prev.filter((img) => !img.isUploading));
+
+      showToast('Upload failed', 'error');
     }
   };
 
@@ -212,6 +236,7 @@ const PortfolioSection = ({
     try {
       await axios.delete(`/auth/me/portfolio-images/${imageId}/`);
       setPortfolioImages((prev) => prev.filter((img) => img.id !== imageId));
+      showToast('Image deleted successfully!', 'success');
     } catch (err) {
       console.error('Failed to delete portfolio image:', err);
     }
@@ -233,7 +258,7 @@ const PortfolioSection = ({
         {!showDropzone && (
           <button
             onClick={() => setShowDropzone(true)}
-            className="flex items-center justify-center text-black transition dark:text-white"
+            className="flex cursor-pointer items-center justify-center text-black transition dark:text-white"
             title="Add more images"
           >
             <PlusCircle size={20} />
@@ -284,7 +309,7 @@ const PortfolioSection = ({
               </button>
               <button
                 onClick={() => uploadFiles([file])}
-                className="absolute right-1 bottom-1 cursor-pointer rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white shadow"
+                className="absolute right-1 bottom-1 cursor-pointer rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow"
               >
                 Upload
               </button>
@@ -293,29 +318,66 @@ const PortfolioSection = ({
         </div>
       )}
 
-      {/* Render all portfolio images */}
-      {portfolioImages.filter((img) => img.image_url.startsWith('https'))
-        .length > 0 && (
+      {/* Portfolio Images or Fallback */}
+      {portfolioImages.length === 0 ? (
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 p-8 text-center transition hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700"
+        >
+          <PlusCircle
+            size={28}
+            className="mb-2 text-gray-700 dark:text-gray-300"
+          />
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            No portfolio images yet
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Click to upload your first image
+          </p>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => onSelectFiles(e.target.files)}
+          />
+        </div>
+      ) : (
         <div className="mt-4 grid grid-cols-2 gap-3">
-          {portfolioImages
-            .filter((img) => img.image_url.startsWith('https'))
-            .map((img) => (
-              <div
-                key={img.id}
-                className="relative aspect-square overflow-hidden rounded-lg"
-              >
-                <img
-                  src={img.image_url}
-                  className="h-full w-full object-cover"
-                />
+          {portfolioImages.map((img) => (
+            <div
+              key={img.id}
+              className="relative aspect-square overflow-hidden rounded-lg"
+            >
+              <img
+                src={img.image_url}
+                className={`h-full w-full object-cover transition-opacity ${
+                  img.isUploading ? 'opacity-50' : 'opacity-100'
+                }`}
+              />
+
+              {/* Uploading overlay */}
+              {img.isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                  <span className="text-sm font-semibold text-white">
+                    Uploading…
+                  </span>
+                </div>
+              )}
+
+              {/* Delete button only for real images */}
+              {!img.isUploading && (
                 <button
                   onClick={() => deletePortfolioImage(img.id)}
-                  className="absolute top-1 right-1 h-8 w-8 cursor-pointer rounded-full bg-white/20 p-1 font-bold shadow hover:text-black"
+                  className="absolute top-1 right-1 h-8 w-8 cursor-pointer rounded-full bg-white/20 p-1 font-bold shadow hover:bg-red-600/70 hover:text-white"
                 >
                   ✕
                 </button>
-              </div>
-            ))}
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -370,21 +432,12 @@ const Profile = () => {
     fetchPortfolio();
   }, []);
 
-  useEffect(() => {
-    if (profile?.listings?.length) {
-      const allImages = profile.listings
-        .flatMap((listing) => listing.portfolio_images || [])
-        .filter((img) => img.image_url?.startsWith('https://'));
-      setPortfolioImages(allImages);
-    }
-  }, [profile]);
-
   // Fetch profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await axios.get('/auth/me');
-        console.log('Profile', res.data.user);
+        //  console.log('Profile', res.data.user);
         setProfile(res.data.user);
       } catch (err) {
         console.error(err);

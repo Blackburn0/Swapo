@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.shortcuts import redirect
 
-from .views import RegisterView, LoginView, PasswordResetRequestView, PasswordResetConfirmView, ChangePasswordView, google_login_redirect, github_login_redirect, oauth_redirect_handler, get_user_info, UpdateProfileView, UserPrivacyView, DeleteAccountView, OtherUserProfileView, UserPortfolioImagesView
+from .views import RegisterView, LoginView, PasswordResetRequestView, PasswordResetConfirmView, ChangePasswordView, google_login_redirect, github_login_redirect, oauth_redirect_handler, get_user_info, UpdateProfileView, UserPrivacyView, DeleteAccountView, OtherUserProfileView, UserPortfolioImagesView, PortfolioImageDeleteView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
@@ -15,6 +15,11 @@ urlpatterns = [
     path("me/", get_user_info, name="get_user_info"),
     path("me/update/", UpdateProfileView.as_view(), name="update_profile"),
     path("me/portfolio-images/", UserPortfolioImagesView.as_view(), name="user-portfolio-images"),
+     path(
+        "me/portfolio-images/<int:image_id>/",
+        PortfolioImageDeleteView.as_view(),
+        name="delete-portfolio-image"
+    ),
     path('users/<int:user_id>/', OtherUserProfileView.as_view(), name='other-user-profile'),
     path("privacy/", UserPrivacyView.as_view(), name="user-privacy"),
     path("delete-account/", DeleteAccountView.as_view(), name="delete-account"),
