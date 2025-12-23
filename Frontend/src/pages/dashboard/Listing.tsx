@@ -48,7 +48,7 @@ const ListingPage = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListing, setLoadingListing] = useState(false);
 
-  const [loadingUserProfile, setLoadingUserProfile] = useState(true);
+  const [_loadingUserProfile, setLoadingUserProfile] = useState(true);
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -165,7 +165,6 @@ const ListingPage = () => {
       ) : (
         <div className="grid gap-5">
           {filteredListings.map((listing) => {
-            const isOwner = profile?.user_id === listing.user_id;
             return (
               <div
                 key={listing.id}

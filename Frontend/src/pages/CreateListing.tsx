@@ -4,17 +4,17 @@ import { ArrowLeft, ImagePlus, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/context/AuthContext';
 
-interface ListingPayload {
-  skill_offered: string | number;
-  skill_desired: string | number;
-  custom_offer_skill?: string;
-  custom_desired_skill?: string;
-  title: string;
-  description: string;
-  status: string;
-  location_preference: string;
-  portfolio_images?: string[];
-}
+// interface ListingPayload {
+//   skill_offered: string | number;
+//   skill_desired: string | number;
+//   custom_offer_skill?: string;
+//   custom_desired_skill?: string;
+//   title: string;
+//   description: string;
+//   status: string;
+//   location_preference: string;
+//   portfolio_images?: string[];
+// }
 
 interface Skill {
   skill_id: number;

@@ -10,7 +10,7 @@ const Home = () => {
         <h1 className="mb-5 text-3xl font-bold">
           Trade your skills, unlock new ones
         </h1>
-        <p className="text-base font-medium text-gray-500">
+        <p className="text-base font-medium text-gray-700">
           {' '}
           Connect with others to exchange your expertise and learn new skills.
         </p>

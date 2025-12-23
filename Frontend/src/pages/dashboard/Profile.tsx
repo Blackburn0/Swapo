@@ -176,12 +176,12 @@ const PortfolioSection = ({
   removeFile,
 }: PortfolioSectionProps) => {
   const [showDropzone, setShowDropzone] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<Set<number>>(new Set());
   const { showToast } = useToast();
 
   const fetchUserPortfolio = async () => {
     try {
       const res = await axios.get('/auth/me/portfolio-images/');
-      // console.log('User Portfolio:', res.data.portfolio_images);
       setPortfolioImages(res.data.portfolio_images || []);
     } catch (err) {
       console.error('Failed to fetch user portfolio:', err);
@@ -193,8 +193,22 @@ const PortfolioSection = ({
   }, []);
 
   /** Upload new files to user portfolio */
-  const uploadFiles = async (files: File[]) => {
+  const uploadFiles = async (files: File[], fileIndex?: number) => {
     if (!files.length) return;
+
+    // Prevent duplicate uploads
+    if (fileIndex !== undefined && uploadingFiles.has(fileIndex)) {
+      return;
+    }
+
+    // Mark this file as uploading
+    if (fileIndex !== undefined) {
+      setUploadingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(fileIndex);
+        return newSet;
+      });
+    }
 
     // Create local preview placeholders
     const optimisticImages: PortfolioImage[] = files.map((file) => ({
@@ -228,6 +242,15 @@ const PortfolioSection = ({
       setPortfolioImages((prev) => prev.filter((img) => !img.isUploading));
 
       showToast('Upload failed', 'error');
+    } finally {
+      // Remove from uploading set
+      if (fileIndex !== undefined) {
+        setUploadingFiles((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(fileIndex);
+          return newSet;
+        });
+      }
     }
   };
 
@@ -292,29 +315,52 @@ const PortfolioSection = ({
       {/* Preview selected files */}
       {portfolioFiles.length > 0 && (
         <div className="mt-3 grid grid-cols-2 gap-3">
-          {portfolioFiles.map((file, idx) => (
-            <div
-              key={idx}
-              className="relative aspect-square overflow-hidden rounded-lg"
-            >
-              <img
-                src={URL.createObjectURL(file)}
-                className="h-full w-full object-cover"
-              />
-              <button
-                onClick={() => removeFile(idx)}
-                className="absolute top-1 right-1 h-8 w-8 cursor-pointer rounded-full bg-white/20 p-1 font-bold shadow hover:text-black"
+          {portfolioFiles.map((file, idx) => {
+            const isUploading = uploadingFiles.has(idx);
+
+            return (
+              <div
+                key={idx}
+                className="relative aspect-square overflow-hidden rounded-lg"
               >
-                ✕
-              </button>
-              <button
-                onClick={() => uploadFiles([file])}
-                className="absolute right-1 bottom-1 cursor-pointer rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow"
-              >
-                Upload
-              </button>
-            </div>
-          ))}
+                <img
+                  src={URL.createObjectURL(file)}
+                  className={`h-full w-full object-cover ${isUploading ? 'opacity-50' : ''}`}
+                  alt="Portfolio preview"
+                />
+
+                {/* Uploading overlay */}
+                {isUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <span className="text-sm font-semibold text-white">
+                      Uploading…
+                    </span>
+                  </div>
+                )}
+
+                {!isUploading && (
+                  <button
+                    onClick={() => removeFile(idx)}
+                    className="absolute top-1 right-1 h-8 w-8 cursor-pointer rounded-full bg-white/20 p-1 font-bold shadow hover:text-black"
+                  >
+                    ✕
+                  </button>
+                )}
+
+                <button
+                  onClick={() => uploadFiles([file], idx)}
+                  className={`absolute right-1 bottom-1 rounded-full px-3 py-1 text-xs font-semibold text-white shadow transition ${
+                    isUploading
+                      ? 'cursor-not-allowed bg-gray-400'
+                      : 'cursor-pointer bg-green-500 hover:bg-green-600'
+                  }`}
+                  disabled={isUploading}
+                >
+                  {isUploading ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -357,6 +403,7 @@ const PortfolioSection = ({
                   className={`h-full w-full object-cover transition-opacity ${
                     img.isUploading ? 'opacity-50' : 'opacity-100'
                   }`}
+                  alt="Portfolio"
                 />
               </a>
 
@@ -477,23 +524,8 @@ const Profile = () => {
   const removeFile = (idx: number) =>
     setPortfolioFiles((prev) => prev.filter((_, i) => i !== idx));
 
-  const removeExistingFile = async (imageId?: number) => {
-    if (!imageId) return;
-
-    try {
-      await axios.delete(`/listings/portfolio-images/${imageId}/`);
-    } catch (err) {
-      console.error('Failed to delete image', err);
-    }
-  };
-
   if (loading || !profile)
     return <p className="p-10 text-center">Loading profile...</p>;
-
-  const allPortfolioImages =
-    profile.listings
-      ?.flatMap((listing) => listing.portfolio_images || [])
-      .filter((img) => img.image_url.startsWith('https://')) || [];
 
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col bg-stone-50/50 py-2 pb-10 dark:bg-gray-900">

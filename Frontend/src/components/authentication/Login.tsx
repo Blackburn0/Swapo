@@ -10,10 +10,21 @@ import { useEnterKey } from '@/hooks/useEnterKey';
 import { useCrud } from '@/hooks/useCrud';
 import { useAuth } from '@/context/AuthContext';
 
-interface LoginUser {
-  id?: number;
+// What you send to the API
+interface LoginPayload {
   email: string;
   password: string;
+}
+
+// What the API returns
+interface LoginResponse {
+  id: number;
+  email?: string;
+  access?: string;
+  token?: string;
+  key?: string;
+  refresh?: string;
+  user?: any;
 }
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -23,8 +34,8 @@ const Login = () => {
   const { showToast } = useToast();
   const { login } = useAuth();
 
-  const { createItem, loading: loginLoading } = useCrud<LoginUser>(
-    `${API_BASE_URL}/auth/login/`
+  const { createItem, loading: loginLoading } = useCrud<LoginResponse>(
+    `${API_BASE_URL}/auth/login/`,
   );
 
   const [email, setEmail] = useState('');
@@ -32,21 +43,14 @@ const Login = () => {
   const passwordToggle = usePasswordToggle();
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
 
-  // OAuth login - redirects to Django which will handle OAuth and redirect back with tokens
   const handleSocialLogin = (provider: 'google' | 'github') => {
     setSocialLoading(provider);
-    
-    // Store provider for callback (optional, mainly for logging)
     sessionStorage.setItem('oauth_provider', provider);
-    
     const endpoint = `${API_BASE_URL}/auth/${provider}/`;
     showToast(`Redirecting to ${provider}...`, 'info');
-    
-    // This will redirect to Django OAuth endpoint
     window.location.href = endpoint;
   };
 
-  // Regular email/password login
   const handleLogin = async () => {
     if (!validateEmail(email)) {
       showToast('Please enter a valid email address', 'info');
@@ -54,7 +58,7 @@ const Login = () => {
     }
 
     try {
-      const response = await createItem({ email, password });
+      const response = await createItem({ email, password } as LoginPayload);
 
       const token = response.access || response.token || response.key;
       const user = response.user || response || {};
@@ -62,7 +66,7 @@ const Login = () => {
       if (token) {
         login(token, user);
         showToast('Welcome back!', 'success');
-        navigate('/app/dashboard'); // Navigate to actual dashboard route
+        navigate('/app/dashboard');
       } else {
         showToast('Invalid login response (no token)', 'error');
       }
@@ -105,7 +109,6 @@ const Login = () => {
         <h1 className="text-3xl font-bold md:text-3xl">Swapo</h1>
         <p className="mt-1 font-medium text-gray-600">Welcome back!</p>
 
-        {/* Social Login */}
         <div className="my-10 flex flex-col space-y-3">
           <Button
             onClick={() => handleSocialLogin('google')}

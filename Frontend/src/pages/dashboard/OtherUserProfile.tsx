@@ -13,9 +13,9 @@ import {
 import Button from '@/components/ui/Button';
 import axiosInstance from '@/utils/axiosInstance';
 import { useToast } from '@/hooks/useToast';
-import axios from '@/utils/axiosInstance';
+//import axios from '@/utils/axiosInstance';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+//const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 interface ListingUser {
   id: number;

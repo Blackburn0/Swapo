@@ -55,7 +55,7 @@ const TradeDetails = () => {
   const [trade, setTrade] = useState<TradeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [_proposal, setProposal] = useState<Proposal | null>(null);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {

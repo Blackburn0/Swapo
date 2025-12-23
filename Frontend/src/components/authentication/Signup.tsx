@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Eye, EyeOff, ChevronLeft, LockKeyhole, Github, Loader2 } from 'lucide-react';
+import {
+  Mail,
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  LockKeyhole,
+  Github,
+  Loader2,
+} from 'lucide-react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import { useToast } from '@/hooks/useToast';
@@ -11,10 +19,20 @@ import { validateEmail } from '@/utils/ValidateEmail';
 import { useEnterKey } from '@/hooks/useEnterKey';
 import { useAuth } from '@/context/AuthContext';
 
-interface NewUser {
-  id?: number;
+// What you send to the API
+interface SignupPayload {
   email: string;
   password: string;
+}
+
+// What the API returns
+interface SignupResponse {
+  id: number;
+  email: string;
+  access?: string;
+  token?: string;
+  refresh?: string;
+  user?: any;
 }
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -24,8 +42,8 @@ const Signup = () => {
   const { showToast } = useToast();
   const { login } = useAuth();
 
-  const { createItem, loading: signupLoading } = useCrud<NewUser>(
-    `${API_BASE_URL}/auth/signup/`
+  const { createItem, loading: signupLoading } = useCrud<SignupResponse>(
+    `${API_BASE_URL}/auth/signup/`,
   );
 
   const passwordToggle = usePasswordToggle();
@@ -53,22 +71,20 @@ const Signup = () => {
     }
 
     try {
-      const response = await createItem({ email, password });
+      const response = await createItem({ email, password } as SignupPayload);
       console.log('Signup success:', response);
-
-      const token = response.access || response.token;
-      const user = response.user || response || {};
 
       if (response.access) {
         login(response.access, { email: response.email });
-        localStorage.setItem('refreshToken', response.refresh);
+        if (response.refresh) {
+          localStorage.setItem('refreshToken', response.refresh);
+        }
         showToast('Signup successful! Welcome!', 'success');
-        navigate('/app/onboarding'); 
+        navigate('/app/onboarding');
       } else {
         showToast('Signup successful, please log in.', 'success');
         navigate('/login');
       }
-      
     } catch (error) {
       showToast('Signup failed. Please try again.', 'error');
     }
@@ -139,9 +155,17 @@ const Signup = () => {
             onChange={(e) => setPassword(e.target.value)}
             rightIcon={
               passwordToggle.visible ? (
-                <EyeOff size={18} onClick={passwordToggle.toggleVisibility} className="cursor-pointer text-gray-500" />
+                <EyeOff
+                  size={18}
+                  onClick={passwordToggle.toggleVisibility}
+                  className="cursor-pointer text-gray-500"
+                />
               ) : (
-                <Eye size={18} onClick={passwordToggle.toggleVisibility} className="cursor-pointer text-gray-500" />
+                <Eye
+                  size={18}
+                  onClick={passwordToggle.toggleVisibility}
+                  className="cursor-pointer text-gray-500"
+                />
               )
             }
           />
@@ -153,9 +177,17 @@ const Signup = () => {
             onChange={(e) => setPasswordConfirm(e.target.value)}
             rightIcon={
               confirmToggle.visible ? (
-                <EyeOff size={18} onClick={confirmToggle.toggleVisibility} className="cursor-pointer text-gray-500" />
+                <EyeOff
+                  size={18}
+                  onClick={confirmToggle.toggleVisibility}
+                  className="cursor-pointer text-gray-500"
+                />
               ) : (
-                <Eye size={18} onClick={confirmToggle.toggleVisibility} className="cursor-pointer text-gray-500" />
+                <Eye
+                  size={18}
+                  onClick={confirmToggle.toggleVisibility}
+                  className="cursor-pointer text-gray-500"
+                />
               )
             }
           />
@@ -164,7 +196,9 @@ const Signup = () => {
         <div className="text-center">
           <Button
             onClick={handleSignup}
-            disabled={signupLoading || isFormIncomplete || socialLoading !== null}
+            disabled={
+              signupLoading || isFormIncomplete || socialLoading !== null
+            }
           >
             {signupLoading ? 'Signing up...' : 'Create Account'}
           </Button>

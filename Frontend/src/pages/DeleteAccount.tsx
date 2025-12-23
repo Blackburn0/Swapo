@@ -1,14 +1,14 @@
-import { useState } from "react";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import { AlertCircle } from "lucide-react";
-import axios from "@/utils/axiosInstance";
-import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/useToast";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import { AlertCircle } from 'lucide-react';
+import axios from '@/utils/axiosInstance';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/useToast';
+import { useNavigate } from 'react-router-dom';
 
 const DeleteAccount = () => {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState('');
   const [checked, setChecked] = useState(false);
   const { token, user, logout } = useAuth();
   const { showToast } = useToast();
@@ -19,47 +19,47 @@ const DeleteAccount = () => {
 
   const handleDelete = async () => {
     if (!checked) {
-      showToast("Please confirm account deletion.", "error");
+      showToast('Please confirm account deletion.', 'error');
       return;
     }
 
     if (!isOAuthUser && !password.trim()) {
-      showToast("Please enter your password to confirm.", "error");
+      showToast('Please enter your password to confirm.', 'error');
       return;
     }
 
     try {
-      const res = await axios.delete("/auth/delete-account/", {
+      const res = await axios.delete('/auth/delete-account/', {
         headers: { Authorization: `Bearer ${token}` },
         data: isOAuthUser ? {} : { password },
         validateStatus: (status) => status < 500, // prevents global 401 redirect
       });
 
       if (res.status === 401 || res.status === 403) {
-        showToast("Invalid or wrong password.", "error");
+        showToast('Invalid or wrong password.', 'error');
         return;
       }
 
       if (res.status === 204 || res.status === 200) {
-        showToast("Your account has been permanently deleted.", "success");
+        showToast('Your account has been permanently deleted.', 'success');
         logout();
-        window.location.href = "http://localhost:5173"; // ✅ redirect home
+        navigate('/'); // redirect home
       } else {
-        showToast("Failed to delete account. Try again.", "error");
+        showToast('Failed to delete account. Try again.', 'error');
       }
     } catch (error) {
-      console.error("Delete account error:", error);
-      showToast("Something went wrong. Try again later.", "error");
+      console.error('Delete account error:', error);
+      showToast('Something went wrong. Try again later.', 'error');
     }
   };
 
   return (
-    <main className="flex flex-col min-h-screen bg-white text-center px-6 py-8">
+    <main className="flex min-h-screen flex-col bg-white px-6 py-8 text-center">
       {/* Header */}
-      <header className="flex items-center mb-8">
+      <header className="mb-8 flex items-center">
         <button
           onClick={() => window.history.back()}
-          className="text-gray-800 text-base font-medium flex items-center"
+          className="flex items-center text-base font-medium text-gray-800"
         >
           ←
         </button>
@@ -69,15 +69,17 @@ const DeleteAccount = () => {
       </header>
 
       {/* Main Content */}
-      <section className="flex-1 flex flex-col items-center max-w-xl mx-auto space-y-6">
+      <section className="mx-auto flex max-w-xl flex-1 flex-col items-center space-y-6">
         <div className="flex flex-col items-center space-y-4">
-          <div className="bg-red-50 p-4 rounded-full">
-            <AlertCircle className="text-red-500 w-8 h-8" />
+          <div className="rounded-full bg-red-50 p-4">
+            <AlertCircle className="h-8 w-8 text-red-500" />
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">Are you sure?</h2>
-            <p className="text-gray-600 mt-2 max-w-sm">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Are you sure?
+            </h2>
+            <p className="mt-2 max-w-sm text-gray-600">
               Deleting your account is a permanent action and cannot be undone.
               All your data, including your profile, skills, and messages, will
               be permanently removed.
@@ -87,7 +89,7 @@ const DeleteAccount = () => {
 
         {/* Password Input → only show for email/password users */}
         {!isOAuthUser && (
-          <div className="w-full text-gray">
+          <div className="text-gray w-full">
             <Input
               type="password"
               name="password"
@@ -100,17 +102,17 @@ const DeleteAccount = () => {
         )}
 
         {/* Checkbox */}
-        <div className="flex items-start space-x-3 text-left w-full">
+        <div className="flex w-full items-start space-x-3 text-left">
           <input
             type="checkbox"
             id="confirmDelete"
             checked={checked}
             onChange={(e) => setChecked(e.target.checked)}
-            className="mt-1 w-4 h-4 accent-red-500"
+            className="mt-1 h-4 w-4 accent-red-500"
           />
           <label
             htmlFor="confirmDelete"
-            className="text-sm text-gray-700 leading-snug"
+            className="text-sm leading-snug text-gray-700"
           >
             I understand this action is irreversible and I want to permanently
             delete my account.
@@ -119,13 +121,13 @@ const DeleteAccount = () => {
       </section>
 
       {/* Delete Button */}
-      <footer className="mt-auto w-full max-w-xl mx-auto">
+      <footer className="mx-auto mt-auto w-full max-w-xl">
         <Button
           onClick={handleDelete}
-          className={`py-3 text-lg font-semibold w-full ${
+          className={`w-full py-3 text-lg font-semibold ${
             checked && (isOAuthUser || password.trim())
-              ? "bg-[#F87171]"
-              : "bg-red-300 cursor-not-allowed"
+              ? 'bg-[#F87171]'
+              : 'cursor-not-allowed bg-red-300'
           }`}
         >
           Delete My Account

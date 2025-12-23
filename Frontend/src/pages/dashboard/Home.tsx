@@ -2,7 +2,6 @@ import {
   ArrowLeftRight,
   Bell,
   MessageSquare,
-  MessageSquareDot,
   PlusCircle,
   Settings,
   Star,

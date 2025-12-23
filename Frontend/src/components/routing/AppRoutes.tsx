@@ -32,7 +32,7 @@ import DeleteAccount from '@/pages/DeleteAccount';
 import ProtectedRoute from './ProtectedRoute';
 import OtherUserProfile from '@/pages/dashboard/OtherUserProfile';
 import ProposalDetails from '@/pages/dashboard/ProposalDetails';
-import SkillDiscovery from '../onboarding/SkillDiscovery';
+//import SkillDiscovery from '../onboarding/SkillDiscovery';
 import AddSkills from '../AddSkills';
 
 const AppRoutes = () => {
