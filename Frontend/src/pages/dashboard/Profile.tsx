@@ -351,12 +351,14 @@ const PortfolioSection = ({
               key={img.id}
               className="relative aspect-square overflow-hidden rounded-lg"
             >
-              <img
-                src={img.image_url}
-                className={`h-full w-full object-cover transition-opacity ${
-                  img.isUploading ? 'opacity-50' : 'opacity-100'
-                }`}
-              />
+              <a href={img.image_url} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={img.image_url}
+                  className={`h-full w-full object-cover transition-opacity ${
+                    img.isUploading ? 'opacity-50' : 'opacity-100'
+                  }`}
+                />
+              </a>
 
               {/* Uploading overlay */}
               {img.isUploading && (
