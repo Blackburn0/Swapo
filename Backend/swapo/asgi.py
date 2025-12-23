@@ -1,5 +1,5 @@
 """
-ASGI config for skillswap project.
+ASGI config for swapo project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skillswap.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'swapo.settings')
 
 application = get_asgi_application()

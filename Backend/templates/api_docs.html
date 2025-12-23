@@ -1,129 +1,292 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>SkillSwap API v1 — Documentation</title>
-  <style>
-    body { font-family: Inter, Arial, Helvetica, sans-serif; margin: 0; color: #14213d; background: #f8fafc; }
-    header { background: #0b4f6c; color: #fff; padding: 28px 36px; }
-    header h1 { margin: 0; font-size: 22px; }
-    header p { margin: 6px 0 0; opacity: .9; }
-    .container { max-width: 1100px; margin: 28px auto; padding: 0 18px; }
-    .section { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 18px; box-shadow: 0 6px 18px rgba(8,8,20,0.04); }
-    h2 { margin-top: 0; color:#0b4f6c; }
-    .endpoint { border-left: 4px solid #0b4f6c; padding: 10px 14px; margin-bottom: 12px; background: #f7fcff; border-radius: 6px;}
-    .meta { font-size: 13px; color: #334155; margin-bottom: 8px; }
-    .method { display:inline-block; padding: 4px 8px; border-radius:6px; font-weight:600; color:#fff; margin-right:8px; }
-    .GET { background:#2a9d8f; } .POST { background:#e76f51; } .PUT { background:#f4a261; } .PATCH { background:#f4a261; } .DELETE { background:#d62828; }
-    pre { background: #0f1724; color: #e6eef8; padding: 12px; overflow:auto; border-radius:6px; font-size:13px; }
-    table { border-collapse: collapse; width:100%; margin-top:10px;}
-    th, td { text-align:left; padding:8px; border-bottom:1px solid #eee; }
-    small.note { color:#6b7280; }
-    .badge { display:inline-block; padding:2px 8px; background:#eef2ff; color:#3730a3; border-radius:999px; font-weight:600; font-size:12px; }
-    footer { text-align:center; color:#94a3b8; padding:18px 0; margin-top:18px; }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="container">
-      <h1>SkillSwap — API v1 Documentation</h1>
-      <p>Versioned base path: <code>/api/v1/</code> — JWT auth via dj-rest-auth + simplejwt. Protected endpoints require <code>Authorization: Bearer &lt;access_token&gt;</code></p>
-    </div>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Swapo API v1 — Documentation</title>
+    <style>
+      body {
+        font-family: Inter, Arial, Helvetica, sans-serif;
+        margin: 0;
+        color: #14213d;
+        background: #f8fafc;
+      }
+      header {
+        background: #0b4f6c;
+        color: #fff;
+        padding: 28px 36px;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      header p {
+        margin: 6px 0 0;
+        opacity: 0.9;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 28px auto;
+        padding: 0 18px;
+      }
+      .section {
+        background: #fff;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 6px 18px rgba(8, 8, 20, 0.04);
+      }
+      h2 {
+        margin-top: 0;
+        color: #0b4f6c;
+      }
+      .endpoint {
+        border-left: 4px solid #0b4f6c;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        background: #f7fcff;
+        border-radius: 6px;
+      }
+      .meta {
+        font-size: 13px;
+        color: #334155;
+        margin-bottom: 8px;
+      }
+      .method {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 8px;
+      }
+      .GET {
+        background: #2a9d8f;
+      }
+      .POST {
+        background: #e76f51;
+      }
+      .PUT {
+        background: #f4a261;
+      }
+      .PATCH {
+        background: #f4a261;
+      }
+      .DELETE {
+        background: #d62828;
+      }
+      pre {
+        background: #0f1724;
+        color: #e6eef8;
+        padding: 12px;
+        overflow: auto;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      small.note {
+        color: #6b7280;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #eef2ff;
+        color: #3730a3;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      footer {
+        text-align: center;
+        color: #94a3b8;
+        padding: 18px 0;
+        margin-top: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>Swapo — API v1 Documentation</h1>
+        <p>
+          Versioned base path: <code>/api/v1/</code> — JWT auth via dj-rest-auth
+          + simplejwt. Protected endpoints require
+          <code>Authorization: Bearer &lt;access_token&gt;</code>
+        </p>
+      </div>
+    </header>
 
-  <main class="container">
-    <section class="section">
-      <h2>Authentication (accounts)</h2>
-      <p class="meta">All auth endpoints live under <code>/api/v1/auth/</code>. These are the custom endpoints you implemented; dj-rest-auth endpoints are also available under the same base path.</p>
+    <main class="container">
+      <section class="section">
+        <h2>Authentication (accounts)</h2>
+        <p class="meta">
+          All auth endpoints live under <code>/api/v1/auth/</code>. These are
+          the custom endpoints you implemented; dj-rest-auth endpoints are also
+          available under the same base path.
+        </p>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/auth/signup/</strong></div>
-        <div class="meta"><small class="note">Public</small> — Create a new user (email + password + username required by your model).</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/auth/signup/</strong>
+          </div>
+          <div class="meta">
+            <small class="note">Public</small> — Create a new user (email +
+            password + username required by your model).
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "email": "user@example.com",
   "username": "alice",
   "password": "securePassword123"
-}</pre>
-        <strong>Success Response (201)</strong>
-        <pre>{
+}</pre
+          >
+          <strong>Success Response (201)</strong>
+          <pre>
+{
   "email": "user@example.com",
   "username": "alice",
   "message": "registered"
-}</pre>
-      </div>
+}</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/auth/login/</strong></div>
-        <div class="meta"><small class="note">Public</small> — Login with email + password; returns JWT tokens (access, refresh).</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/auth/login/</strong>
+          </div>
+          <div class="meta">
+            <small class="note">Public</small> — Login with email + password;
+            returns JWT tokens (access, refresh).
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "email": "user@example.com",
   "password": "securePassword123"
-}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{
+}</pre
+          >
+          <strong>Success Response (200)</strong>
+          <pre>
+{
   "access": "eyJ0eXAiOiJKV1QiLCJh...",
   "refresh": "eyJ0eXAiOiJKV1QiLCJh..."
-}</pre>
-      </div>
+}</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/auth/token/refresh/</strong></div>
-        <div class="meta"><small class="note">Public (requires refresh token)</small> — Exchange refresh token for a new access token.</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/auth/token/refresh/</strong>
+          </div>
+          <div class="meta">
+            <small class="note">Public (requires refresh token)</small> —
+            Exchange refresh token for a new access token.
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "refresh": "&lt;refresh_token&gt;"
-}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{
+}</pre
+          >
+          <strong>Success Response (200)</strong>
+          <pre>
+{
   "access": "&lt;new_access_token&gt;"
-}</pre>
-      </div>
+}</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/auth/password/forgot/</strong></div>
-        <div class="meta"><small class="note">Public</small> — Request password reset email (uses Django PasswordResetTokenGenerator).</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/auth/password/forgot/</strong>
+          </div>
+          <div class="meta">
+            <small class="note">Public</small> — Request password reset email
+            (uses Django PasswordResetTokenGenerator).
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "email": "user@example.com"
-}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{
+}</pre
+          >
+          <strong>Success Response (200)</strong>
+          <pre>
+{
   "message": "Password reset link sent"
-}</pre>
-      </div>
+}</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/auth/password/reset/&lt;uidb64&gt;/&lt;token&gt;/</strong></div>
-        <div class="meta"><small class="note">Public (tokenized)</small> — Reset password using uid & token in URL (frontend provides new password).</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong
+              >/api/v1/auth/password/reset/&lt;uidb64&gt;/&lt;token&gt;/</strong
+            >
+          </div>
+          <div class="meta">
+            <small class="note">Public (tokenized)</small> — Reset password
+            using uid & token in URL (frontend provides new password).
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "password": "newSecurePassword123"
-}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{ "message": "Password has been reset" }</pre>
-      </div>
+}</pre
+          >
+          <strong>Success Response (200)</strong>
+          <pre>{ "message": "Password has been reset" }</pre>
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/auth/change-password/</strong></div>
-        <div class="meta"><small class="note">Protected — Bearer access token required</small> — Change password for authenticated user.</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/auth/change-password/</strong>
+          </div>
+          <div class="meta">
+            <small class="note">Protected — Bearer access token required</small>
+            — Change password for authenticated user.
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "old_password": "oldPass",
   "new_password": "newPass123",
   "confirm_password": "newPass123"
-}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{ "message": "Password updated successfully" }</pre>
-      </div>
+}</pre
+          >
+          <strong>Success Response (200)</strong>
+          <pre>{ "message": "Password updated successfully" }</pre>
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method GET">GET</span><strong>/api/v1/auth/user/</strong></div>
-        <div class="meta"><small class="note">Protected</small> — Fetch authenticated user's profile (standard dj-rest-auth/user endpoint or your custom view).</div>
-        <strong>Success Response (200)</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method GET">GET</span
+            ><strong>/api/v1/auth/user/</strong>
+          </div>
+          <div class="meta">
+            <small class="note">Protected</small> — Fetch authenticated user's
+            profile (standard dj-rest-auth/user endpoint or your custom view).
+          </div>
+          <strong>Success Response (200)</strong>
+          <pre>
+{
   "user_id": 12,
   "username": "alice",
   "email": "user@example.com",
@@ -134,19 +297,30 @@
   "last_login": "2025-10-12T08:00:00Z",
   "rating": "4.50",
   "num_reviews": 5
-}</pre>
-      </div>
-    </section>
+}</pre
+          >
+        </div>
+      </section>
 
-    <section class="section">
-      <h2>Trades & Trade Proposals</h2>
-      <p class="meta">Base path: <code>/api/v1/trades/</code>. All endpoints below require authentication (Bearer token).</p>
+      <section class="section">
+        <h2>Trades & Trade Proposals</h2>
+        <p class="meta">
+          Base path: <code>/api/v1/trades/</code>. All endpoints below require
+          authentication (Bearer token).
+        </p>
 
-      <div class="endpoint">
-        <div><span class="method GET">GET</span><strong>/api/v1/trades/proposals/</strong></div>
-        <div class="meta">List proposals (auth). Supports pagination & filtering (implement as needed).</div>
-        <strong>Response (200)</strong>
-        <pre>[
+        <div class="endpoint">
+          <div>
+            <span class="method GET">GET</span
+            ><strong>/api/v1/trades/proposals/</strong>
+          </div>
+          <div class="meta">
+            List proposals (auth). Supports pagination & filtering (implement as
+            needed).
+          </div>
+          <strong>Response (200)</strong>
+          <pre>
+[
   {
     "proposal_id": 1,
     "listing": 10,
@@ -159,41 +333,64 @@
     "status": "pending",
     "last_status_update": "2025-10-11T11:20:00Z"
   }
-]</pre>
-      </div>
+]</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/trades/proposals/</strong></div>
-        <div class="meta">Create a proposal (auth). The authenticated user is the <code>proposer</code> — do not accept proposer id in the request body.</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/trades/proposals/</strong>
+          </div>
+          <div class="meta">
+            Create a proposal (auth). The authenticated user is the
+            <code>proposer</code> — do not accept proposer id in the request
+            body.
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "listing": 10,
   "skill_offered_by_proposer": 7,
   "skill_desired_by_proposer": 3,
   "message": "I propose to trade..."
-}</pre>
-        <strong>Success Response (201)</strong>
-        <pre>{
+}</pre
+          >
+          <strong>Success Response (201)</strong>
+          <pre>
+{
   "proposal_id": 14,
   "status": "pending",
   "proposal_date": "2025-10-11T12:00:00Z"
-}</pre>
-      </div>
+}</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/trades/proposals/&lt;id&gt;/accept/</strong></div>
-        <div class="meta">Custom action — Accept a proposal. Only the listing owner (recipient) may accept. On accept: proposal status -> <code>accepted</code>, listing status -> <code>matched</code>, and optionally create a <code>Trade</code> record.</div>
-        <strong>Request JSON</strong>
-        <pre>{}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{ "message": "proposal accepted", "trade_id": 21 }</pre>
-      </div>
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/trades/proposals/&lt;id&gt;/accept/</strong>
+          </div>
+          <div class="meta">
+            Custom action — Accept a proposal. Only the listing owner
+            (recipient) may accept. On accept: proposal status ->
+            <code>accepted</code>, listing status -> <code>matched</code>, and
+            optionally create a <code>Trade</code> record.
+          </div>
+          <strong>Request JSON</strong>
+          <pre>{}</pre>
+          <strong>Success Response (200)</strong>
+          <pre>{ "message": "proposal accepted", "trade_id": 21 }</pre>
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method GET">GET</span><strong>/api/v1/trades/</strong></div>
-        <div class="meta">List trades (auth). Returns confirmed trades.</div>
-        <strong>Response (200)</strong>
-        <pre>[
+        <div class="endpoint">
+          <div>
+            <span class="method GET">GET</span><strong>/api/v1/trades/</strong>
+          </div>
+          <div class="meta">List trades (auth). Returns confirmed trades.</div>
+          <strong>Response (200)</strong>
+          <pre>
+[
   {
     "trade_id": 21,
     "proposal": 14,
@@ -207,31 +404,50 @@
     "status": "in_progress",
     "terms_agreed": "User2 will deliver logo; User4 will deliver landing page."
   }
-]</pre>
-      </div>
+]</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method PATCH">PATCH</span><strong>/api/v1/trades/&lt;trade_id&gt;/</strong></div>
-        <div class="meta">Update trade status, actual_completion_date, etc. (auth) — use PATCH for partial updates.</div>
-        <strong>Request JSON (example: mark completed)</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method PATCH">PATCH</span
+            ><strong>/api/v1/trades/&lt;trade_id&gt;/</strong>
+          </div>
+          <div class="meta">
+            Update trade status, actual_completion_date, etc. (auth) — use PATCH
+            for partial updates.
+          </div>
+          <strong>Request JSON (example: mark completed)</strong>
+          <pre>
+{
   "status": "completed",
   "actual_completion_date": "2025-10-19T15:30:00Z"
-}</pre>
-        <strong>Success Response (200)</strong>
-        <pre>{ "message": "trade updated", "status": "completed" }</pre>
-      </div>
-    </section>
+}</pre
+          >
+          <strong>Success Response (200)</strong>
+          <pre>{ "message": "trade updated", "status": "completed" }</pre>
+        </div>
+      </section>
 
-    <section class="section">
-      <h2>Messaging</h2>
-      <p class="meta">Base path: <code>/api/v1/messages/</code>. Auth required. Messages may optionally be tied to a trade or proposal via respective foreign keys.</p>
+      <section class="section">
+        <h2>Messaging</h2>
+        <p class="meta">
+          Base path: <code>/api/v1/messages/</code>. Auth required. Messages may
+          optionally be tied to a trade or proposal via respective foreign keys.
+        </p>
 
-      <div class="endpoint">
-        <div><span class="method GET">GET</span><strong>/api/v1/messages/</strong></div>
-        <div class="meta">List received messages for the authenticated user (paginated). Optionally query by sender, trade or proposal.</div>
-        <strong>Response (200)</strong>
-        <pre>[
+        <div class="endpoint">
+          <div>
+            <span class="method GET">GET</span
+            ><strong>/api/v1/messages/</strong>
+          </div>
+          <div class="meta">
+            List received messages for the authenticated user (paginated).
+            Optionally query by sender, trade or proposal.
+          </div>
+          <strong>Response (200)</strong>
+          <pre>
+[
   {
     "message_id": 101,
     "sender": 4,
@@ -243,40 +459,61 @@
     "is_read": false,
     "message_type": "text"
   }
-]</pre>
-      </div>
+]</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method POST">POST</span><strong>/api/v1/messages/</strong></div>
-        <div class="meta">Send a message (auth). The server assigns <code>sender</code> from the authenticated user.</div>
-        <strong>Request JSON</strong>
-        <pre>{
+        <div class="endpoint">
+          <div>
+            <span class="method POST">POST</span
+            ><strong>/api/v1/messages/</strong>
+          </div>
+          <div class="meta">
+            Send a message (auth). The server assigns <code>sender</code> from
+            the authenticated user.
+          </div>
+          <strong>Request JSON</strong>
+          <pre>
+{
   "receiver": 2,
   "content": "Hi — I can start tomorrow.",
   "trade": 21,            // optional
   "proposal": null,       // optional
   "message_type": "text"
-}</pre>
-        <strong>Success Response (201)</strong>
-        <pre>{
+}</pre
+          >
+          <strong>Success Response (201)</strong>
+          <pre>
+{
   "message_id": 113,
   "sender": 4,
   "receiver": 2,
   "content": "Hi — I can start tomorrow.",
   "timestamp": "2025-10-11T14:05:00Z"
-}</pre>
-      </div>
-    </section>
+}</pre
+          >
+        </div>
+      </section>
 
-    <section class="section">
-      <h2>Notifications</h2>
-      <p class="meta">Base path: <code>/api/v1/notifications/</code>. Auth required. Notifications are delivered to a specific user and may refer to message/proposal/trade records.</p>
+      <section class="section">
+        <h2>Notifications</h2>
+        <p class="meta">
+          Base path: <code>/api/v1/notifications/</code>. Auth required.
+          Notifications are delivered to a specific user and may refer to
+          message/proposal/trade records.
+        </p>
 
-      <div class="endpoint">
-        <div><span class="method GET">GET</span><strong>/api/v1/notifications/</strong></div>
-        <div class="meta">List notifications for the authenticated user (most recent first).</div>
-        <strong>Response (200)</strong>
-        <pre>[
+        <div class="endpoint">
+          <div>
+            <span class="method GET">GET</span
+            ><strong>/api/v1/notifications/</strong>
+          </div>
+          <div class="meta">
+            List notifications for the authenticated user (most recent first).
+          </div>
+          <strong>Response (200)</strong>
+          <pre>
+[
   {
     "notification_id": 401,
     "user": 2,
@@ -289,43 +526,96 @@
     "is_read": false,
     "link_url": "/messages/113/"
   }
-]</pre>
-      </div>
+]</pre
+          >
+        </div>
 
-      <div class="endpoint">
-        <div><span class="method PATCH">PATCH</span><strong>/api/v1/notifications/&lt;id&gt;/</strong></div>
-        <div class="meta">Mark notification as read (auth). Use PATCH with <code>{ "is_read": true }</code> or use a custom endpoint <code>/api/v1/notifications/&lt;id&gt;/mark-read/</code>.</div>
-        <strong>Request JSON</strong>
-        <pre>{ "is_read": true }</pre>
-      </div>
-    </section>
+        <div class="endpoint">
+          <div>
+            <span class="method PATCH">PATCH</span
+            ><strong>/api/v1/notifications/&lt;id&gt;/</strong>
+          </div>
+          <div class="meta">
+            Mark notification as read (auth). Use PATCH with
+            <code>{ "is_read": true }</code> or use a custom endpoint
+            <code>/api/v1/notifications/&lt;id&gt;/mark-read/</code>.
+          </div>
+          <strong>Request JSON</strong>
+          <pre>{ "is_read": true }</pre>
+        </div>
+      </section>
 
-    <section class="section">
-      <h2>Other Endpoints (Overview)</h2>
-      <p class="meta">Quick reference for the apps referenced in your <code>urls.py</code>. Implementations follow the same patterns as above (DRF ModelViewSets, JWT-protected where required).</p>
+      <section class="section">
+        <h2>Other Endpoints (Overview)</h2>
+        <p class="meta">
+          Quick reference for the apps referenced in your <code>urls.py</code>.
+          Implementations follow the same patterns as above (DRF ModelViewSets,
+          JWT-protected where required).
+        </p>
 
-      <table>
-        <thead><tr><th>Path</th><th>Purpose</th><th>Auth</th></tr></thead>
-        <tbody>
-          <tr><td>/api/v1/skills/</td><td>CRUD skills (admin create). Public list/read; protected create/update/delete for admins</td><td>Optional</td></tr>
-          <tr><td>/api/v1/listings/</td><td>SkillListings (create a listing, view listings, update status)</td><td>Auth required for create/update</td></tr>
-          <tr><td>/api/v1/user-skills/</td><td>UserSkills join table (manage your offered/desired skills)</td><td>Auth required</td></tr>
-          <tr><td>/api/v1/reviews/</td><td>Post reviews after trade completion (links to trade)</td><td>Auth required</td></tr>
-          <tr><td>/api/v1/userblocks/</td><td>Block/unblock users (one-way block)</td><td>Auth required</td></tr>
-        </tbody>
-      </table>
-    </section>
+        <table>
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>Purpose</th>
+              <th>Auth</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>/api/v1/skills/</td>
+              <td>
+                CRUD skills (admin create). Public list/read; protected
+                create/update/delete for admins
+              </td>
+              <td>Optional</td>
+            </tr>
+            <tr>
+              <td>/api/v1/listings/</td>
+              <td>
+                SkillListings (create a listing, view listings, update status)
+              </td>
+              <td>Auth required for create/update</td>
+            </tr>
+            <tr>
+              <td>/api/v1/user-skills/</td>
+              <td>
+                UserSkills join table (manage your offered/desired skills)
+              </td>
+              <td>Auth required</td>
+            </tr>
+            <tr>
+              <td>/api/v1/reviews/</td>
+              <td>Post reviews after trade completion (links to trade)</td>
+              <td>Auth required</td>
+            </tr>
+            <tr>
+              <td>/api/v1/userblocks/</td>
+              <td>Block/unblock users (one-way block)</td>
+              <td>Auth required</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-    <section class="section">
-      <h2>Authentication & Headers</h2>
-      <p class="meta">All protected calls require the HTTP header:</p>
-      <pre>Authorization: Bearer &lt;access_token&gt;</pre>
-      <p class="meta">If using dj-rest-auth endpoints, follow their documented endpoints for password change, logout, and social auth — your custom auth endpoints (above) replace or complement these as desired.</p>
-    </section>
+      <section class="section">
+        <h2>Authentication & Headers</h2>
+        <p class="meta">All protected calls require the HTTP header:</p>
+        <pre>Authorization: Bearer &lt;access_token&gt;</pre>
+        <p class="meta">
+          If using dj-rest-auth endpoints, follow their documented endpoints for
+          password change, logout, and social auth — your custom auth endpoints
+          (above) replace or complement these as desired.
+        </p>
+      </section>
 
-    <footer>
-      <small>Generated for SkillSwap — API v1. Keep versioning consistent: <code>/api/v1/</code>. If you want an OpenAPI/Swagger export next, I can generate a DRF schema file (e.g., using drf-spectacular).</small>
-    </footer>
-  </main>
-</body>
+      <footer>
+        <small
+          >Generated for Swapo — API v1. Keep versioning consistent:
+          <code>/api/v1/</code>. If you want an OpenAPI/Swagger export next, I
+          can generate a DRF schema file (e.g., using drf-spectacular).</small
+        >
+      </footer>
+    </main>
+  </body>
 </html>

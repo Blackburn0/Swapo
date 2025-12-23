@@ -68,7 +68,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'skillswap.urls'
+ROOT_URLCONF = 'swapo.urls'
 
 TEMPLATES = [
     {
@@ -85,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'skillswap.wsgi.application'
+WSGI_APPLICATION = 'swapo.wsgi.application'
 
 # Database - PostgreSQL in production, SQLite for local dev
 if os.environ.get('DATABASE_URL'):

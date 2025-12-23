@@ -1,5 +1,5 @@
 """
-URL configuration for skillswap project.
+URL configuration for swapo project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -26,7 +26,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    path("", lambda request: HttpResponse("Welcome to SkillSwap!")), 
+    path("", lambda request: HttpResponse("Welcome to swapo!")), 
 
       # Auth endpoints
     path("api/v1/auth/", include("accounts.urls")),

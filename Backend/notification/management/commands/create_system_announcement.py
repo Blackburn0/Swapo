@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--message',
             type=str,
-            default='Welcome to SkillSwap! Start trading skills with other users today.',
+            default='Welcome to Swapo! Start trading skills with other users today.',
             help='The message for the system announcement'
         )
 
